@@ -142,36 +142,38 @@ export const ProductDetailPage: React.FC = () => {
           </div>
 
           {/* Quantity Controls & Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <div className="flex items-center border border-slate-300 rounded-xl h-12 w-full sm:w-36 shrink-0 justify-between px-3 bg-white">
+          <div className="flex flex-col sm:flex-row gap-3 pt-2 w-full">
+            <div className="flex items-center border border-slate-300 rounded-xl h-12 w-full sm:w-36 shrink-0 justify-between px-4 bg-white">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="p-1 text-slate-600 hover:text-[#00694c]"
+                className="p-1 text-slate-600 hover:text-[#00694c] active:scale-95"
               >
                 <Minus className="w-4 h-4" />
               </button>
               <span className="font-extrabold text-slate-800 text-base">{quantity}</span>
               <button
                 onClick={() => setQuantity(quantity + 1)}
-                className="p-1 text-slate-600 hover:text-[#00694c]"
+                className="p-1 text-slate-600 hover:text-[#00694c] active:scale-95"
               >
                 <Plus className="w-4 h-4" />
               </button>
             </div>
 
-            <button
-              onClick={handleAddToCart}
-              className="flex-1 bg-[#00694c] hover:bg-[#004d37] text-white h-12 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-900/10 active:scale-98"
-            >
-              <ShoppingCart className="w-4 h-4" /> Add to Cart
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3 w-full">
+              <button
+                onClick={handleAddToCart}
+                className="w-full sm:flex-1 bg-[#00694c] hover:bg-[#004d37] text-white h-12 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-900/10 active:scale-98"
+              >
+                <ShoppingCart className="w-4 h-4" /> Add to Cart
+              </button>
 
-            <button
-              onClick={handleBuyNow}
-              className="flex-1 bg-white border-2 border-[#00694c] text-[#00694c] hover:bg-[#00694c]/10 h-12 rounded-xl font-bold text-sm flex items-center justify-center transition-all active:scale-98"
-            >
-              Buy Now
-            </button>
+              <button
+                onClick={handleBuyNow}
+                className="w-full sm:flex-1 bg-white border-2 border-[#00694c] text-[#00694c] hover:bg-[#00694c]/10 h-12 rounded-xl font-bold text-sm flex items-center justify-center transition-all active:scale-98"
+              >
+                Buy Now
+              </button>
+            </div>
           </div>
 
           {/* Meta Trust Badges */}
