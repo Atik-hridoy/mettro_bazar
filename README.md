@@ -1,32 +1,65 @@
-# React + TypeScript + Vite
+# 🛒 Mettro Bazar - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
 
-Currently, two official plugins are available:
+Mettro Bazar is a modern, responsive, and dynamic e-commerce frontend built with **React**, **TypeScript**, and **Tailwind CSS**. It provides a seamless shopping experience with a clean UI, an integrated admin dashboard, and cart functionality.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Features
+- 📱 **Fully Responsive Design**: Optimized for mobile, tablet, and desktop viewing.
+- 🔐 **Authentication System**: Secure user login and registration.
+- 🛒 **Shopping Cart & Checkout**: Seamless cart management and checkout flow.
+- 🎛️ **Admin Dashboard**: Comprehensive dashboard for managing products, categories, and customers.
+- ⚡ **Fast & Performant**: Powered by Vite for lightning-fast HMR and optimized builds.
 
-## React Compiler
+## 🚀 Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
+Make sure you have [Node.js](https://nodejs.org/) installed on your machine.
 
-## Expanding the Oxlint configuration
+### Installation
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+1. **Clone the repository:**
+   ```bash
+   git clone <your-repo-url>
+   cd mettro_bazar
+   ```
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open your browser:**
+   Navigate to `http://localhost:5173` to see the application in action.
+
+## 📁 Project Structure
+```
+src/
+├── components/      # Reusable UI components (buttons, inputs, cards)
+├── pages/           # Page components (Home, Product Detail, Admin Dashboard)
+├── store/           # Zustand state management (cart, auth)
+├── services/        # API calls and integration
+├── types/           # TypeScript interfaces and types
+└── assets/          # Static assets like images and icons
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## 🛠️ Built With
+- [React](https://reactjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Zustand](https://github.com/pmndrs/zustand)
+- [Lucide React](https://lucide.dev/) (Icons)
+
+## 🤝 Contributing
+Contributions, issues, and feature requests are welcome!
+
+## 📝 License
+This project is licensed under the MIT License.

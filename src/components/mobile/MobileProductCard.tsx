@@ -13,8 +13,9 @@ export const MobileProductCard: React.FC<MobileProductCardProps> = ({ product })
   const addItem = useCartStore((state) => state.addItem);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
 
+  const variants = product.weightVariants || [];
   const selectedVariant: WeightVariant =
-    product.weightVariants[selectedVariantIndex] || product.weightVariants[0];
+    variants[selectedVariantIndex] || variants[0] || { id: 'default', weight: 'Standard', price: product.price || 0, stock: 10 };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -59,7 +60,7 @@ export const MobileProductCard: React.FC<MobileProductCardProps> = ({ product })
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-1.5 overflow-x-auto">
-          {product.weightVariants.map((v, i) => (
+          {variants.map((v, i) => (
             <button
               key={v.id}
               onClick={() => setSelectedVariantIndex(i)}

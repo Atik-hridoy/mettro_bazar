@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProducts } from '../hooks/useProducts';
 import { ProductCard } from '../components/features/ProductCard';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
 import { EmptyState } from '../components/ui/EmptyState';
 import { ArrowRight, CheckCircle, Leaf } from 'lucide-react';
+import { bannerService } from '../services/bannerService';
+import type { Banner } from '../types/banner';
+
+import { HeroBannerSlider } from '../components/features/HeroBannerSlider';
 
 interface HomePageProps {
   searchQuery: string;
@@ -11,44 +15,25 @@ interface HomePageProps {
 
 export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [banners, setBanners] = useState<Banner[]>([]);
 
   const { products, categories, isLoading, error } = useProducts(
     selectedCategory,
     searchQuery
   );
 
+  useEffect(() => {
+    async function loadBanners() {
+      const bannerData = await bannerService.getBanners();
+      setBanners(bannerData);
+    }
+    loadBanners();
+  }, []);
+
   return (
     <div className="flex-grow w-full px-4 sm:px-6 lg:px-8 py-6 space-y-10">
-      {/* Full Width Hero Section */}
-      <section className="bg-gradient-to-r from-[#004d37] via-[#00694c] to-emerald-700 rounded-3xl overflow-hidden relative min-h-[340px] sm:min-h-[400px] flex items-center shadow-xl border border-emerald-800 text-white">
-        <div className="absolute inset-0 z-0">
-          <div
-            className="bg-cover bg-center w-full h-full opacity-25 mix-blend-overlay"
-            style={{
-              backgroundImage: "url('/images/hero.jpg')",
-            }}
-          />
-        </div>
-        <div className="relative z-10 p-6 sm:p-12 md:p-16 max-w-3xl space-y-4">
-          <span className="inline-block bg-amber-400 text-slate-900 font-extrabold text-xs px-3.5 py-1 rounded-full shadow-sm">
-            100% Ready-To-Cook
-          </span>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black leading-tight tracking-tight text-white drop-shadow-sm">
-            Fresh Homemade Quality Delivered
-          </h1>
-          <p className="text-sm sm:text-lg text-emerald-100 leading-relaxed max-w-xl">
-            Experience authentic Bangladeshi cooking with pre-marinated meats, frozen parathas, & gourmet dish kits.
-          </p>
-          <div className="pt-2">
-            <a
-              href="#products"
-              className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm sm:text-base py-3.5 px-8 rounded-xl transition-all inline-flex items-center gap-2 shadow-lg shadow-amber-400/20 active:scale-95"
-            >
-              Shop Now <ArrowRight className="w-5 h-5" />
-            </a>
-          </div>
-        </div>
-      </section>
+      {/* Dynamic Full Width Hero Banner Carousel */}
+      <HeroBannerSlider banners={banners} />
 
       {/* Category Chips Bar */}
       <section id="categories" className="space-y-3">

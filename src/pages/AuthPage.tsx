@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
-import { ArrowLeft, Mail, Lock, User as UserIcon, Phone } from 'lucide-react';
+import { authService } from '../services/authService';
+import { ArrowLeft, Lock, User as UserIcon, Phone } from 'lucide-react';
 
 export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,59 +12,81 @@ export const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Login Form Fields
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
+  // Login Fields
+  const [loginPhone, setLoginPhone] = useState('01700000000');
+  const [loginPassword, setLoginPassword] = useState('admin1234');
 
-  // Sign Up Form Fields
+  // Sign Up Fields
   const [signupName, setSignupName] = useState('');
-  const [signupEmail, setSignupEmail] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!loginEmail || !loginPassword) {
-      setError('Please enter both email and password.');
+
+    if (!loginPhone || !loginPassword) {
+      setError('Please enter both phone number and password.');
       return;
     }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const { user } = await authService.login(loginPhone, loginPassword);
       setUser({
-        id: 'usr-' + Date.now(),
-        phone: '+880 1712-345678',
-        name: 'Gourmet Chef',
-        address: 'House 42, Road 11, Banani, Dhaka',
+        id: user.id || 'usr-' + Date.now(),
+        phone: user.phone || loginPhone,
+        name: user.name || 'Gourmet Chef',
+        address: user.address || 'House 42, Road 11, Banani, Dhaka',
       });
       setLoading(false);
-      navigate('/profile');
-    }, 500);
+      
+      if (user.phone === '01700000000' || user.phone === '12345678901' || user.isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/profile');
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Invalid login credentials.');
+      setLoading(false);
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!signupName || !signupEmail || !signupPassword || !signupConfirmPassword) {
+
+    if (!signupName || !signupPhone || !signupPassword) {
       setError('Please fill in all required fields.');
       return;
     }
+
     if (signupPassword !== signupConfirmPassword) {
       setError('Passwords do not match.');
       return;
     }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const { user } = await authService.register(signupName, signupPhone, signupPassword);
       setUser({
-        id: 'usr-' + Date.now(),
-        phone: signupPhone || '+880 1712-345678',
-        name: signupName,
-        address: 'House 42, Road 11, Banani, Dhaka',
+        id: user.id || 'usr-' + Date.now(),
+        phone: user.phone || signupPhone,
+        name: user.name || signupName,
+        address: user.address || 'House 42, Road 11, Banani, Dhaka',
       });
       setLoading(false);
-      navigate('/profile');
-    }, 500);
+      
+      if (user.phone === '01700000000' || user.phone === '12345678901' || user.isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/profile');
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to register account.');
+      setLoading(false);
+    }
   };
 
   const handleGuestContinue = () => {
@@ -130,7 +153,7 @@ export const AuthPage: React.FC = () => {
             </h1>
             <p className="text-xs text-slate-500 font-medium">
               {mode === 'login'
-                ? 'Enter your email and password to log in'
+                ? 'Enter your phone number and password to log in'
                 : 'Fill in your details to register your account'}
             </p>
           </div>
@@ -146,18 +169,18 @@ export const AuthPage: React.FC = () => {
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Email Address *
+                  Phone Number / Username *
                 </label>
                 <div className="relative">
                   <input
-                    type="email"
-                    placeholder="name@example.com"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
+                    type="text"
+                    placeholder="017XXXXXXXX or admin"
+                    value={loginPhone}
+                    onChange={(e) => setLoginPhone(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00694c] text-slate-800 text-sm font-medium"
                     required
                   />
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
 
@@ -181,7 +204,7 @@ export const AuthPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 px-4 bg-[#00694c] hover:bg-[#004d37] text-white font-extrabold rounded-xl transition-all shadow-md shadow-emerald-900/10 active:scale-98 text-sm"
+                className="w-full py-3.5 px-4 bg-[#00694c] hover:bg-[#004d37] disabled:opacity-50 text-white font-extrabold rounded-xl transition-all shadow-md shadow-emerald-900/10 active:scale-98 text-sm"
               >
                 {loading ? 'Logging in...' : 'Log in'}
               </button>
@@ -208,32 +231,16 @@ export const AuthPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Email Address *
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    placeholder="name@example.com"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00694c] text-slate-800 text-sm font-medium"
-                    required
-                  />
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Phone Number (Optional)
+                  Phone Number *
                 </label>
                 <div className="relative">
                   <input
                     type="tel"
-                    placeholder="+880 1XXXXXXXXX"
+                    placeholder="01XXXXXXXXX"
                     value={signupPhone}
                     onChange={(e) => setSignupPhone(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00694c] text-slate-800 text-sm font-medium"
+                    required
                   />
                   <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 </div>
@@ -276,7 +283,7 @@ export const AuthPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 px-4 bg-[#00694c] hover:bg-[#004d37] text-white font-extrabold rounded-xl transition-all shadow-md shadow-emerald-900/10 active:scale-98 text-sm"
+                className="w-full py-3.5 px-4 bg-[#00694c] hover:bg-[#004d37] disabled:opacity-50 text-white font-extrabold rounded-xl transition-all shadow-md shadow-emerald-900/10 active:scale-98 text-sm"
               >
                 {loading ? 'Creating Account...' : 'Sign up'}
               </button>

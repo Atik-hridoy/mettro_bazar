@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { authService } from '../../services/authService';
 import { Button } from '../ui/Button';
@@ -11,6 +12,7 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
@@ -42,6 +44,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       const { user } = await authService.verifyOtp(phone, otp);
       setUser(user);
       onClose();
+      
+      // Admin redirect logic
+      if (user.phone === '01700000000' || user.phone === '12345678901' || user.isAdmin) {
+        navigate('/admin');
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Invalid OTP');
     } finally {

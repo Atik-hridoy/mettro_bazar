@@ -10,6 +10,7 @@ import { MobileHomePage } from './components/mobile/MobileHomePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { AuthPage } from './pages/AuthPage';
 
 function AppLayout() {
@@ -20,11 +21,13 @@ function AppLayout() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const isAuthRoute = location.pathname === '/auth';
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const hideNavbar = isAuthRoute || isAdminRoute;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
-      {/* Hide Navbar on /auth route */}
-      {!isAuthRoute &&
+      {/* Hide Navbar on /auth or /admin routes */}
+      {!hideNavbar &&
         (isMobile ? (
           <MobileNavbar
             onOpenCart={() => setIsCartOpen(true)}
@@ -55,6 +58,7 @@ function AppLayout() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/admin" element={<AdminDashboardPage />} />
         </Routes>
       </main>
 

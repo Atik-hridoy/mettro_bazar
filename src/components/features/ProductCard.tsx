@@ -13,8 +13,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const addItem = useCartStore((state) => state.addItem);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
 
+  const variants = product.weightVariants || [];
   const selectedVariant: WeightVariant =
-    product.weightVariants[selectedVariantIndex] || product.weightVariants[0];
+    variants[selectedVariantIndex] || variants[0] || { id: 'default', weight: 'Standard', price: product.price || 0, stock: 10 };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -59,7 +60,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Portion Weight Selection Dropdown */}
         <div className="space-y-2 pt-2 border-t border-slate-100">
-          {product.weightVariants.length > 1 ? (
+          {variants.length > 1 ? (
             <div
               className="relative"
               onClick={(e) => e.stopPropagation()}
@@ -73,7 +74,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   onChange={handleVariantSelect}
                   className="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold py-1.5 pl-3 pr-8 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-[#00694c] cursor-pointer"
                 >
-                  {product.weightVariants.map((v, i) => (
+                  {variants.map((v, i) => (
                     <option key={v.id} value={i}>
                       {v.weight} — ৳{v.price}
                     </option>

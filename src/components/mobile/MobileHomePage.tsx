@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProducts } from '../../hooks/useProducts';
 import { MobileProductCard } from './MobileProductCard';
 import { SkeletonLoader } from '../ui/SkeletonLoader';
 import { EmptyState } from '../ui/EmptyState';
 import { ArrowRight, CheckCircle, Leaf } from 'lucide-react';
+import { bannerService } from '../../services/bannerService';
+import type { Banner } from '../../types/banner';
+import { HeroBannerSlider } from '../features/HeroBannerSlider';
 
 interface MobileHomePageProps {
   searchQuery: string;
@@ -11,36 +14,25 @@ interface MobileHomePageProps {
 
 export const MobileHomePage: React.FC<MobileHomePageProps> = ({ searchQuery }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [banners, setBanners] = useState<Banner[]>([]);
 
   const { products, categories, isLoading, error } = useProducts(
     selectedCategory,
     searchQuery
   );
 
+  useEffect(() => {
+    async function loadBanners() {
+      const bannerData = await bannerService.getBanners();
+      setBanners(bannerData);
+    }
+    loadBanners();
+  }, []);
+
   return (
     <div className="w-full px-3 py-4 space-y-6">
-      {/* Mobile Hero Banner */}
-      <section className="bg-gradient-to-br from-[#004d37] to-[#00694c] rounded-2xl p-5 text-white relative overflow-hidden shadow-lg border border-emerald-800">
-        <div className="relative z-10 space-y-2">
-          <span className="inline-block bg-amber-400 text-slate-900 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full">
-            Ready-To-Cook
-          </span>
-          <h1 className="text-xl font-black leading-tight">
-            Fresh Homemade Quality Delivered
-          </h1>
-          <p className="text-xs text-emerald-100 leading-snug">
-            Authentic Bangladeshi pre-marinated meats & meals.
-          </p>
-          <div className="pt-1">
-            <a
-              href="#mobile-products"
-              className="bg-amber-400 text-slate-950 font-black text-xs py-2 px-5 rounded-lg inline-flex items-center gap-1 active:scale-95 shadow"
-            >
-              Shop Now <ArrowRight className="w-3.5 h-3.5" />
-            </a>
-          </div>
-        </div>
-      </section>
+      {/* Mobile Dynamic Hero Banner */}
+      <HeroBannerSlider banners={banners} />
 
       {/* Mobile Scrollable Categories */}
       <section className="space-y-2">

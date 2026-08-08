@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useCartStore } from '../store/useCartStore';
+import { useUserProfileStore } from '../store/useUserProfileStore';
 import { useNavigate } from 'react-router-dom';
+import { orderService } from '../services/orderService';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -11,24 +13,36 @@ import {
   Lock,
   CheckCircle,
   Leaf,
+  PackageCheck,
+  MapPin,
+  Clock,
 } from 'lucide-react';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCartStore();
 
+  // Promo Code State
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [promoError, setPromoError] = useState('');
   const [promoSuccess, setPromoSuccess] = useState('');
 
-  // Form Fields
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
+  // Form Fields State
+  const [fullName, setFullName] = useState('Shafiqur Rahman');
+  const [phone, setPhone] = useState('+880 1712-345678');
+  const [address, setAddress] = useState('House 42, Road 11, Block D, Banani');
   const [city, setCity] = useState('Dhaka');
   const [instructions, setInstructions] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'bkash' | 'card'>('cod');
+
+  // Success Modal State
+  const [orderSuccessDetails, setOrderSuccessDetails] = useState<{
+    orderId: string;
+    totalAmount: number;
+    paymentMethod: string;
+    deliveryAddress: string;
+  } | null>(null);
 
   const subtotal = getTotalPrice();
   const deliveryFee = subtotal > 0 ? 60 : 0;
@@ -47,18 +61,156 @@ export const CheckoutPage: React.FC = () => {
     }
   };
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !phone || !address) {
       alert('Please fill in your name, phone number, and delivery address.');
       return;
     }
-    alert(
-      `Order placed successfully!\nName: ${fullName}\nTotal: ৳${total}\nPayment: ${paymentMethod.toUpperCase()}`
-    );
-    clearCart();
-    navigate('/');
+
+    setIsSubmitting(true);
+
+    try {
+      // 1. Send Order to Backend API POST /api/orders/
+      const orderPayload = {
+        customer_name: fullName,
+        phone: phone,
+        delivery_address: `${address}, ${city}`,
+        payment_method: (paymentMethod === 'cod' ? 'COD' : 'SSLCOMMERZ') as 'COD' | 'SSLCOMMERZ',
+        notes: instructions,
+        items: items.map((i) => ({
+          product_id: i.product.id,
+          variant_id: i.selectedVariant?.id,
+          quantity: i.quantity,
+          unit_price: i.selectedVariant?.price || i.product.price,
+        })),
+      };
+
+      const backendOrder = await orderService.createOrder(orderPayload);
+      const orderId = backendOrder.orderNumber || backendOrder.id || ('MB-' + Math.floor(1000 + Math.random() * 9000));
+
+      // 2. If SSLCommerz / Online payment, initiate gateway session
+      if (paymentMethod !== 'cod') {
+        try {
+          const initRes = await orderService.initPayment(backendOrder.id);
+          if (initRes.GatewayPageURL) {
+            clearCart();
+            window.location.href = initRes.GatewayPageURL;
+            return;
+          }
+        } catch (payErr) {
+          console.warn('Gateway init failed, using order success page:', payErr);
+        }
+      }
+
+      // Save order in user profile store
+      useUserProfileStore.getState().orders.unshift({
+        id: orderId,
+        date: 'Just Now',
+        status: 'Processing',
+        items: items.map((i) => ({
+          productName: i.product.name,
+          weight: i.selectedVariant.weight,
+          quantity: i.quantity,
+          price: i.selectedVariant.price,
+        })),
+        totalPrice: total,
+        paymentMethod:
+          paymentMethod === 'cod'
+            ? 'Cash on Delivery'
+            : paymentMethod === 'bkash'
+            ? 'bKash'
+            : 'Credit / Debit Card (SSLCommerz)',
+      });
+
+      setOrderSuccessDetails({
+        orderId,
+        totalAmount: total,
+        paymentMethod:
+          paymentMethod === 'cod'
+            ? 'Cash on Delivery'
+            : paymentMethod === 'bkash'
+            ? 'bKash'
+            : 'Credit / Debit Card (SSLCommerz)',
+        deliveryAddress: `${address}, ${city}`,
+      });
+
+      clearCart();
+    } catch (err: unknown) {
+      console.error('Order creation error:', err);
+      alert(err instanceof Error ? err.message : 'Failed to place order. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (orderSuccessDetails) {
+    return (
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-10 flex flex-col items-center justify-center min-h-[80vh]">
+        <div className="bg-white rounded-3xl border border-emerald-100 p-6 sm:p-10 max-w-lg w-full text-center shadow-2xl space-y-6 relative overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-3 bg-gradient-to-r from-[#00694c] via-emerald-500 to-amber-400" />
+
+          <div className="w-20 h-20 bg-emerald-100 text-[#00694c] rounded-full flex items-center justify-center mx-auto shadow-inner">
+            <PackageCheck className="w-10 h-10" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="inline-block bg-emerald-100 text-[#00694c] text-xs font-black px-3 py-1 rounded-full">
+              Order Confirmed
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-800">
+              Thank You for Your Order!
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500">
+              Your ready-to-cook meal order has been placed successfully.
+            </p>
+          </div>
+
+          <div className="bg-slate-50 rounded-2xl p-4 sm:p-6 text-left border border-slate-200 space-y-3 text-xs sm:text-sm">
+            <div className="flex justify-between border-b border-slate-200 pb-2">
+              <span className="text-slate-500 font-medium">Order Number:</span>
+              <span className="font-black text-[#00694c]">#{orderSuccessDetails.orderId}</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-200 pb-2">
+              <span className="text-slate-500 font-medium">Total Paid:</span>
+              <span className="font-extrabold text-slate-800">৳{orderSuccessDetails.totalAmount}</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-200 pb-2">
+              <span className="text-slate-500 font-medium">Payment Method:</span>
+              <span className="font-semibold text-slate-800">{orderSuccessDetails.paymentMethod}</span>
+            </div>
+            <div className="flex items-start gap-2 pt-1">
+              <MapPin className="w-4 h-4 text-[#00694c] shrink-0 mt-0.5" />
+              <span className="text-slate-700 leading-tight">{orderSuccessDetails.deliveryAddress}</span>
+            </div>
+            <div className="flex items-center gap-2 pt-1 text-emerald-700 font-semibold">
+              <Clock className="w-4 h-4 text-[#00694c]" />
+              <span>Estimated Delivery: 2-4 Hours</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Button
+              fullWidth
+              onClick={() => navigate('/profile')}
+              className="bg-[#00694c] hover:bg-[#004d37]"
+            >
+              Track Order in Profile
+            </Button>
+            <Button
+              fullWidth
+              variant="outline"
+              onClick={() => navigate('/')}
+            >
+              Continue Shopping
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -353,9 +505,10 @@ export const CheckoutPage: React.FC = () => {
 
             <button
               onClick={handlePlaceOrder}
-              className="w-full bg-[#00694c] hover:bg-[#004d37] text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-emerald-900/10 uppercase tracking-wider text-sm active:scale-98"
+              disabled={isSubmitting}
+              className="w-full bg-[#00694c] hover:bg-[#004d37] disabled:opacity-50 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-emerald-900/10 uppercase tracking-wider text-sm active:scale-98"
             >
-              Place Order
+              {isSubmitting ? 'Processing Order...' : 'Place Order'}
             </button>
 
             <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 pt-1">

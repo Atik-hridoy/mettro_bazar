@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import type { WeightVariant } from '../types/product';
 import { useProduct, useProducts } from '../hooks/useProducts';
 import { useCartStore } from '../store/useCartStore';
 import { ProductCard } from '../components/features/ProductCard';
@@ -51,7 +52,9 @@ export const ProductDetailPage: React.FC = () => {
     );
   }
 
-  const selectedVariant = product.weightVariants[selectedVariantIndex] || product.weightVariants[0];
+  const variants = product.weightVariants || [];
+  const selectedVariant: WeightVariant =
+    variants[selectedVariantIndex] || variants[0] || { id: 'default', weight: 'Standard', price: product.price || 0, stock: 10 };
 
   const handleAddToCart = () => {
     if (selectedVariant) {
