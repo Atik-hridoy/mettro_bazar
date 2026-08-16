@@ -11,12 +11,29 @@ export interface CartItem {
   category?: string;
 }
 
+export interface User {
+  phone: string;
+  name?: string;
+  isLoggedIn: boolean;
+}
+
+export interface Address {
+  id: string;
+  label: string;
+  details: string;
+  city: string;
+  phone: string;
+}
+
 interface CartState {
   cartItems: CartItem[];
   totalPrice: number;
   totalItems: number;
   isDrawerOpen: boolean;
   isAuthModalOpen: boolean;
+  user: User | null;
+  selectedAddress: Address | null;
+  savedAddresses: Address[];
   
   // Actions
   addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
@@ -26,6 +43,10 @@ interface CartState {
   toggleDrawer: () => void;
   setDrawerOpen: (isOpen: boolean) => void;
   setAuthModalOpen: (isOpen: boolean) => void;
+  loginUser: (phone: string, name?: string) => void;
+  logoutUser: () => void;
+  setSelectedAddress: (address: Address | null) => void;
+  addAddress: (address: Address) => void;
 }
 
 const calculateTotals = (items: CartItem[]) => {
@@ -40,6 +61,17 @@ export const useCartStore = create<CartState>((set) => ({
   totalItems: 0,
   isDrawerOpen: false,
   isAuthModalOpen: false,
+  user: null,
+  selectedAddress: null,
+  savedAddresses: [
+    {
+      id: 'addr-1',
+      label: 'Home',
+      details: 'House 24, Road 5, Block B, Banani, Dhaka',
+      city: 'Dhaka',
+      phone: '01333410106',
+    },
+  ],
 
   addItem: (product) =>
     set((state) => {
@@ -128,4 +160,30 @@ export const useCartStore = create<CartState>((set) => ({
     set({
       isAuthModalOpen: isOpen,
     }),
+
+  loginUser: (phone, name) =>
+    set({
+      user: {
+        phone: phone || '01333410106',
+        name: name || 'Customer',
+        isLoggedIn: true,
+      },
+      isAuthModalOpen: false,
+    }),
+
+  logoutUser: () =>
+    set({
+      user: null,
+    }),
+
+  setSelectedAddress: (address) =>
+    set({
+      selectedAddress: address,
+    }),
+
+  addAddress: (address) =>
+    set((state) => ({
+      savedAddresses: [...state.savedAddresses, address],
+      selectedAddress: address,
+    })),
 }));

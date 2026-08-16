@@ -8,8 +8,9 @@ import {
   Search,
   Crosshair,
   MapPinIcon,
-  X,
-  Mail,
+  Bell,
+  User as UserIcon,
+  LogOut,
 } from 'lucide-react';
 import { CITIES } from '@/lib/constants';
 import logo from '@/assets/logo.png';
@@ -26,9 +27,10 @@ export const Header: React.FC<HeaderProps> = ({
   searchQuery = '',
   onSearchChange,
 }) => {
-  const { setAuthModalOpen } = useCartStore();
+  const { setAuthModalOpen, user, logoutUser } = useCartStore();
   const [selectedCity, setSelectedCity] = useState('Dhaka');
   const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [language, setLanguage] = useState<'EN' | 'BN'>('EN');
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -74,9 +76,12 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="relative">
               <button
                 onClick={() => setIsLocationOpen(!isLocationOpen)}
-                className="flex items-center gap-1.5 text-xs font-semibold text-[#632AAD] hover:bg-purple-50 px-2 py-1 rounded transition-colors"
+                className="flex items-center gap-1 text-xs font-semibold text-[#632AAD] hover:bg-purple-50 px-2 py-1 rounded transition-colors"
               >
-                <MapPin className="w-3.5 h-3.5" />
+                {user?.isLoggedIn && (
+                  <span className="text-zinc-500 font-normal mr-0.5 hidden sm:inline">Delivering to</span>
+                )}
+                <MapPin className="w-3.5 h-3.5 text-[#632AAD]" />
                 <span>{selectedCity}</span>
                 <ChevronDown className="w-3.5 h-3.5 text-[#632AAD]" />
               </button>
@@ -123,7 +128,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Center: Search Bar (Shows on Scroll or Active) */}
+          {/* Center: Search Bar */}
           <div
             className={`flex-1 max-w-xl transition-all duration-200 ${
               isScrolled || searchQuery
@@ -145,7 +150,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Right: Language switch & Login */}
+          {/* Right: Language switch & Login / User Profile */}
           <div className="flex items-center gap-3 shrink-0">
             {/* Language switch */}
             <div className="flex items-center border border-zinc-300 rounded overflow-hidden text-xs">
@@ -171,13 +176,58 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
 
-            {/* Login Button */}
-            <button
-              onClick={() => setAuthModalOpen(true)}
-              className="px-4 py-1.5 bg-[#7533CB] hover:bg-[#632AAD] text-white text-xs font-semibold rounded shadow-xs transition-colors"
-            >
-              Login
-            </button>
+            {/* If Logged In: Bell & User Profile Button matching Screenshot */}
+            {user?.isLoggedIn ? (
+              <div className="flex items-center gap-2.5">
+                {/* Notification Bell */}
+                <button className="p-1.5 text-zinc-700 hover:bg-zinc-100 rounded-full transition-colors relative">
+                  <Bell className="w-4 h-4" />
+                </button>
+
+                {/* User Profile Pill */}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center gap-2 pl-1 pr-2.5 py-1 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-full transition-colors"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-[#7533CB] text-white flex items-center justify-center text-xs font-bold">
+                      <UserIcon className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-xs font-bold text-zinc-800">
+                      {user.phone}
+                    </span>
+                  </button>
+
+                  {/* User Dropdown */}
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-1.5 w-44 bg-white rounded-lg shadow-lg border border-zinc-200 py-1 z-50 animate-in fade-in duration-150">
+                      <div className="px-3.5 py-2 border-b border-zinc-100">
+                        <div className="text-[11px] text-zinc-500 font-medium">Logged in as</div>
+                        <div className="text-xs font-bold text-zinc-800 truncate">{user.phone}</div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          logoutUser();
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full px-3.5 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors font-medium text-left"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Login Button */
+              <button
+                onClick={() => setAuthModalOpen(true)}
+                className="px-4 py-1.5 bg-[#7533CB] hover:bg-[#632AAD] text-white text-xs font-semibold rounded shadow-xs transition-colors"
+              >
+                Login
+              </button>
+            )}
           </div>
         </div>
       </header>

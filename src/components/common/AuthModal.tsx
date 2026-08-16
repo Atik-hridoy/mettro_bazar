@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { X, Mail, ChevronDown } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 
 export const AuthModal: React.FC = () => {
-  const { isAuthModalOpen, setAuthModalOpen, isDrawerOpen } = useCartStore();
+  const router = useRouter();
+  const { isAuthModalOpen, setAuthModalOpen, isDrawerOpen, loginUser } = useCartStore();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -15,9 +17,19 @@ export const AuthModal: React.FC = () => {
     e.preventDefault();
     setIsSubmitted(true);
     setTimeout(() => {
+      loginUser(phoneNumber || '01333410106');
       setIsSubmitted(false);
-      setAuthModalOpen(false);
-    }, 1200);
+      router.push('/checkout');
+    }, 600);
+  };
+
+  const handleSocialLogin = () => {
+    setIsSubmitted(true);
+    setTimeout(() => {
+      loginUser('01333410106');
+      setIsSubmitted(false);
+      router.push('/checkout');
+    }, 600);
   };
 
   return (
@@ -47,6 +59,7 @@ export const AuthModal: React.FC = () => {
           {/* 1. Facebook Button */}
           <button
             type="button"
+            onClick={handleSocialLogin}
             className="w-full py-2.5 px-3 bg-[#4267B2] hover:bg-[#365899] text-white text-xs font-semibold rounded flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer"
           >
             <span className="font-black text-sm">f</span>
@@ -58,6 +71,7 @@ export const AuthModal: React.FC = () => {
           {/* 2. Email Button */}
           <button
             type="button"
+            onClick={handleSocialLogin}
             className="w-full py-2.5 px-3 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold rounded border border-zinc-300 flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer"
           >
             <Mail className="w-4 h-4 text-amber-500" />
@@ -106,7 +120,7 @@ export const AuthModal: React.FC = () => {
               type="submit"
               className="w-full py-3 bg-[#7533CB] hover:bg-[#632AAD] text-white text-xs font-bold uppercase tracking-wider rounded shadow-xs transition-colors cursor-pointer"
             >
-              {isSubmitted ? 'Logging In...' : 'SIGN UP / LOGIN'}
+              {isSubmitted ? 'Signing In...' : 'SIGN UP / LOGIN'}
             </button>
           </form>
 
