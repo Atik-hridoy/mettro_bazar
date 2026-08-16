@@ -5,7 +5,7 @@ import { X, Mail, ChevronDown } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 
 export const AuthModal: React.FC = () => {
-  const { isAuthModalOpen, setAuthModalOpen } = useCartStore();
+  const { isAuthModalOpen, setAuthModalOpen, isDrawerOpen } = useCartStore();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -21,7 +21,7 @@ export const AuthModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/40 backdrop-blur-2xs transition-opacity"
@@ -29,11 +29,15 @@ export const AuthModal: React.FC = () => {
       />
 
       {/* Auth Modal Box matching Chaldal 1:1 */}
-      <div className="relative w-full max-w-sm bg-white rounded-lg shadow-2xl p-6 z-10 animate-in zoom-in-95 duration-150 border border-zinc-200">
+      <div
+        className={`relative w-full max-w-sm bg-white rounded-lg shadow-2xl p-6 z-10 animate-in zoom-in-95 duration-150 border border-zinc-200 ${
+          isDrawerOpen ? 'lg:-translate-x-44' : ''
+        }`}
+      >
         {/* Modal Close Button */}
         <button
           onClick={() => setAuthModalOpen(false)}
-          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 p-1"
+          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 p-1 rounded-full hover:bg-zinc-100 transition-colors"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
@@ -41,7 +45,10 @@ export const AuthModal: React.FC = () => {
 
         <div className="space-y-3.5 pt-1">
           {/* 1. Facebook Button */}
-          <button className="w-full py-2.5 px-3 bg-[#4267B2] hover:bg-[#365899] text-white text-xs font-semibold rounded flex items-center justify-center gap-2 transition-colors shadow-2xs">
+          <button
+            type="button"
+            className="w-full py-2.5 px-3 bg-[#4267B2] hover:bg-[#365899] text-white text-xs font-semibold rounded flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer"
+          >
             <span className="font-black text-sm">f</span>
             <span>
               Sign Up or Login with <strong>Facebook</strong>
@@ -49,7 +56,10 @@ export const AuthModal: React.FC = () => {
           </button>
 
           {/* 2. Email Button */}
-          <button className="w-full py-2.5 px-3 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold rounded border border-zinc-300 flex items-center justify-center gap-2 transition-colors shadow-2xs">
+          <button
+            type="button"
+            className="w-full py-2.5 px-3 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold rounded border border-zinc-300 flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer"
+          >
             <Mail className="w-4 h-4 text-amber-500" />
             <span>
               Login with <strong>Email</strong>
@@ -94,7 +104,7 @@ export const AuthModal: React.FC = () => {
             {/* 5. Submit Button */}
             <button
               type="submit"
-              className="w-full py-3 bg-[#7533CB] hover:bg-[#632AAD] text-white text-xs font-bold uppercase tracking-wider rounded shadow-xs transition-colors"
+              className="w-full py-3 bg-[#7533CB] hover:bg-[#632AAD] text-white text-xs font-bold uppercase tracking-wider rounded shadow-xs transition-colors cursor-pointer"
             >
               {isSubmitted ? 'Logging In...' : 'SIGN UP / LOGIN'}
             </button>
