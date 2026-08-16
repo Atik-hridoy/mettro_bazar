@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { POPULAR_CATEGORIES_DATA, PopularCategory, BRAND_PARTNERS } from '@/lib/constants';
 
@@ -9,6 +10,7 @@ interface CategoryGridProps {
 }
 
 export const CategoryGrid: React.FC<CategoryGridProps> = ({ onSelectCategory }) => {
+  const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {
@@ -16,6 +18,14 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ onSelectCategory }) 
       const scrollAmount = direction === 'left' ? -250 : 250;
       scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
+  };
+
+  const handleCategoryClick = (cat: PopularCategory) => {
+    if (onSelectCategory) {
+      onSelectCategory(cat.id);
+    }
+    // Navigate to food subcategory or direct category
+    router.push(`/category/food/${cat.slug}`);
   };
 
   return (
@@ -61,7 +71,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ onSelectCategory }) 
           {POPULAR_CATEGORIES_DATA.map((cat: PopularCategory) => (
             <div
               key={cat.id}
-              onClick={() => onSelectCategory && onSelectCategory(cat.id)}
+              onClick={() => handleCategoryClick(cat)}
               className="shrink-0 w-36 sm:w-40 bg-white border border-zinc-200 rounded-xl p-3 flex flex-col items-center justify-between hover:shadow-xs transition-shadow cursor-pointer group"
             >
               <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center mb-2 overflow-hidden">
@@ -72,7 +82,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ onSelectCategory }) 
                 />
               </div>
 
-              <span className="text-xs font-medium text-zinc-800 text-center line-clamp-2 leading-tight">
+              <span className="text-xs font-medium text-zinc-800 text-center line-clamp-2 leading-tight group-hover:text-[#7533CB] transition-colors">
                 {cat.name}
               </span>
             </div>
@@ -80,10 +90,10 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ onSelectCategory }) 
         </div>
       </section>
 
-      {/* 2. Popular on Chaldal (Brand Logos) */}
+      {/* 2. Popular on METRO BAZAR (Brand Logos) */}
       <section className="w-full py-4 px-4 sm:px-6 max-w-7xl mx-auto border-t border-zinc-100">
         <h3 className="text-base font-semibold text-zinc-900 text-center mb-6">
-          Popular on Chaldal
+          Popular on METRO BAZAR
         </h3>
 
         <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap opacity-80">

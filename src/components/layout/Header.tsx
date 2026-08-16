@@ -7,11 +7,12 @@ import {
   ChevronDown,
   Search,
   Crosshair,
-  Egg,
+  MapPinIcon,
   X,
   Mail,
 } from 'lucide-react';
 import { CITIES } from '@/lib/constants';
+import logo from '@/assets/logo.png';
 
 interface HeaderProps {
   onToggleMobileSidebar?: () => void;
@@ -47,7 +48,7 @@ export const Header: React.FC<HeaderProps> = ({
     <>
       <header className="sticky top-0 z-40 w-full bg-white border-b border-zinc-200">
         <div className="flex items-center justify-between h-14 px-4 md:px-6 gap-4">
-          {/* Left: Hamburger & Chaldal Logo & Location */}
+          {/* Left: Hamburger, Site Logo & Location */}
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <button
               onClick={onToggleMobileSidebar}
@@ -57,12 +58,15 @@ export const Header: React.FC<HeaderProps> = ({
               <Menu className="w-5 h-5 text-zinc-800" />
             </button>
 
-            {/* Chaldal Authentic Logo */}
-            <a href="/" className="flex items-center gap-1.5 group select-none">
-              {/* Egg icon */}
-              <div className="w-7 h-8 bg-gradient-to-tr from-[#E59866] via-[#F8C471] to-[#FADBD8] rounded-[50%_50%_50%_50%/60%_60%_40%_40%] shadow-2xs group-hover:scale-105 transition-transform" />
-              <span className="text-2xl font-bold tracking-tight text-[#4A235A] font-serif italic">
-                Chaldal
+            {/* Custom Brand Logo & METRO BAZAR Brand Title */}
+            <a href="/" className="flex items-center gap-2 group select-none py-1">
+              <img
+                src={typeof logo === 'string' ? logo : logo.src || '/logo.png'}
+                alt="METRO BAZAR Logo"
+                className="h-8 sm:h-9 w-auto object-contain transition-transform group-hover:scale-105"
+              />
+              <span className="text-xl sm:text-2xl font-black tracking-tight text-[#4A235A] font-serif italic whitespace-nowrap">
+                METRO BAZAR
               </span>
             </a>
 
@@ -110,7 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
                           : 'text-zinc-700'
                       }`}
                     >
-                      <Egg className="w-3.5 h-3.5 text-amber-500 fill-amber-200" />
+                      <MapPinIcon className="w-3.5 h-3.5 text-amber-500" />
                       <span>{city}</span>
                     </button>
                   ))}
@@ -178,7 +182,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </header>
 
-      {/* Login Modal 1:1 matching Chaldal */}
+      {/* Login Modal */}
       {isLoginModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div

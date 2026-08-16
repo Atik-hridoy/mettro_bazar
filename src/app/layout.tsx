@@ -10,11 +10,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Chaldal - Online Grocery Shopping and Delivery in Bangladesh',
+  title: 'METRO BAZAR - Online Grocery Shopping and Delivery in Bangladesh',
   description:
-    'Chaldal is an online grocery shop in Dhaka, Bangladesh. Buy fresh vegetables, fruits, dairy, meat, fish, cooking essentials, and household products with 1-hour delivery.',
+    'METRO BAZAR is an online grocery shop in Dhaka, Bangladesh. Buy fresh vegetables, fruits, dairy, meat, fish, cooking essentials, and household products with 1-hour delivery.',
   icons: {
-    icon: '/favicon.svg',
+    icon: '/logo.png',
   },
 };
 

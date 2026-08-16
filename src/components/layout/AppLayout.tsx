@@ -10,27 +10,32 @@ interface AppLayoutProps {
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  // Always open by default on desktop, unless user explicitly closes it
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <div className="min-h-screen bg-white flex flex-col text-zinc-900 font-sans">
-      {/* Authentic Chaldal Sticky Top Header */}
+      {/* Authentic Sticky Top Header */}
       <Header
-        onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+        onToggleMobileSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
 
       <div className="flex-1 flex w-full relative">
-        {/* Exact Fixed Left Sidebar (w-56) */}
+        {/* Left Side Menu (Always open by default, can be toggled by user) */}
         <Sidebar
-          isOpenMobile={isMobileSidebarOpen}
-          onCloseMobile={() => setIsMobileSidebarOpen(false)}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
 
-        {/* Main Content Area */}
-        <main className="flex-1 w-full md:pl-56 min-w-0 bg-white">
+        {/* Main Content Area (Smoothly adjusts width when sidebar toggles) */}
+        <main
+          className={`flex-1 w-full min-w-0 bg-white transition-all duration-300 ${
+            isSidebarOpen ? 'md:pl-56' : 'md:pl-0'
+          }`}
+        >
           {children}
         </main>
 
