@@ -11,27 +11,30 @@ interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <div className="min-h-screen bg-white flex flex-col text-zinc-900 font-sans">
-      {/* Slim Sticky Top Header */}
+      {/* Authentic Chaldal Sticky Top Header */}
       <Header
         onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
       />
 
       <div className="flex-1 flex w-full relative">
-        {/* Flat Left Sidebar (Fixed on Desktop & Drawer on Mobile) */}
+        {/* Exact Fixed Left Sidebar (w-56) */}
         <Sidebar
           isOpenMobile={isMobileSidebarOpen}
           onCloseMobile={() => setIsMobileSidebarOpen(false)}
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 w-full md:pl-60 min-w-0 bg-white">
+        <main className="flex-1 w-full md:pl-56 min-w-0 bg-white">
           {children}
         </main>
 
-        {/* Floating Cart & Sliding Drawer */}
+        {/* Right Sticky Cart & Drawer */}
         <FloatingCart />
       </div>
     </div>

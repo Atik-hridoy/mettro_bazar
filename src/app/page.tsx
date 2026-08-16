@@ -12,16 +12,16 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {/* Centered Flat Hero Section with search bar */}
+      {/* 1. Hero with soft lavender gradient & live photo collage */}
       <HeroSection onSearch={(query) => setSearchQuery(query)} />
 
-      {/* Trust Badges */}
+      {/* 2. Exact 4 Chaldal Trust Badges */}
       <FeatureCards />
 
-      {/* Flat Full-Width Popular Categories */}
+      {/* 3. Popular Categories horizontal row & Popular on Chaldal brand logos */}
       <CategoryGrid onSelectCategory={(catId) => setSelectedCategory(catId)} />
 
-      {/* Product Catalog */}
+      {/* 4. Product Catalog with Chaldal circular plus buttons & instant cart sync */}
       <ProductGrid
         searchQuery={searchQuery}
         selectedCategory={selectedCategory}
