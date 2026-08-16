@@ -1,5 +1,0 @@
-{
-  "/category/[...slug]/page": "/category/[...slug]",
-  "/page": "/",
-  "/_not-found/page": "/_not-found"
-}
