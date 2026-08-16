@@ -252,27 +252,27 @@ export const RegisteredHomeView: React.FC = () => {
 
   return (
     <div className="w-full px-4 sm:px-6 py-4 space-y-8 pb-16">
-      {/* 1. Top Portrait Promo Banners Row matching Screenshot */}
+      {/* 1. Top Portrait Promo Banners Row matching Screenshot 1:1 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
         {PROMO_BANNERS.map((banner) => (
           <div
             key={banner.id}
             onClick={() => handleOpenStory(banner)}
-            className="group relative h-48 sm:h-56 rounded-xl overflow-hidden shadow-xs cursor-pointer select-none transition-transform hover:-translate-y-1"
+            className="group relative h-64 sm:h-76 md:h-84 lg:h-[350px] aspect-[9/14] rounded-xl overflow-hidden shadow-xs cursor-pointer select-none transition-transform hover:-translate-y-1 border border-zinc-100"
           >
             <img
               src={banner.image}
               alt={banner.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-3 text-white">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-3 text-white">
               <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 mb-0.5">
                 {banner.badge}
               </span>
-              <h3 className="text-xs sm:text-sm font-bold leading-tight line-clamp-1">
+              <h3 className="text-xs sm:text-sm font-bold leading-tight line-clamp-2">
                 {banner.title}
               </h3>
-              <p className="text-[10px] text-zinc-200 line-clamp-1 mt-0.5 font-light">
+              <p className="text-[11px] text-zinc-200 line-clamp-1 mt-0.5 font-normal">
                 {banner.subtitle}
               </p>
             </div>
