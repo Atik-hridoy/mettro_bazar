@@ -19,8 +19,12 @@ export const AuthModal: React.FC = () => {
     setTimeout(() => {
       loginUser(phoneNumber || '01333410106');
       setIsSubmitted(false);
-      router.push('/checkout');
-    }, 600);
+      if (isDrawerOpen) {
+        router.push('/checkout');
+      } else {
+        router.push('/');
+      }
+    }, 500);
   };
 
   const handleSocialLogin = () => {
@@ -28,8 +32,12 @@ export const AuthModal: React.FC = () => {
     setTimeout(() => {
       loginUser('01333410106');
       setIsSubmitted(false);
-      router.push('/checkout');
-    }, 600);
+      if (isDrawerOpen) {
+        router.push('/checkout');
+      } else {
+        router.push('/');
+      }
+    }, 500);
   };
 
   return (
