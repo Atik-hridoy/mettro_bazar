@@ -4,7 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
-import { CATEGORY_TREE, CategoryItem } from '@/lib/constants';
+import { CATEGORY_TREE, CategoryItem, CHALDAL_PRODUCTS, Product } from '@/lib/constants';
+import { ProductCard } from '@/components/common/ProductCard';
 
 // Helper to find a category and its breadcrumb path from the tree
 function findCategoryPath(
@@ -52,11 +53,9 @@ export default function CategoryPage() {
     ? [rawSlug]
     : [];
 
-  // Search in CATEGORY_TREE
-  // If slug is a single subcategory like 'meat-and-fish', search top-level and second-level
   let { target, breadcrumbs } = findCategoryPath(CATEGORY_TREE, slugArray);
 
-  // If not found at root, check inside root children (like Food)
+  // Fallback search inside root children if slug was passed as single path
   if (!target && slugArray.length === 1) {
     for (const root of CATEGORY_TREE) {
       if (root.children) {
@@ -67,6 +66,18 @@ export default function CategoryPage() {
           target = sub;
           breadcrumbs = [root, sub];
           break;
+        }
+        for (const subItem of root.children) {
+          if (subItem.children) {
+            const leaf = subItem.children.find(
+              (l) => l.slug === slugArray[0] || l.id === slugArray[0]
+            );
+            if (leaf) {
+              target = leaf;
+              breadcrumbs = [root, subItem, leaf];
+              break;
+            }
+          }
         }
       }
     }
@@ -84,11 +95,22 @@ export default function CategoryPage() {
   }
 
   const childCategories = target.children || [];
+  const isLeafCategory = childCategories.length === 0;
+
+  // Filter products matching this leaf subcategory slug
+  const categoryProducts = isLeafCategory
+    ? CHALDAL_PRODUCTS.filter(
+        (p) =>
+          p.categorySlug === target?.slug ||
+          p.categorySlug === target?.id ||
+          p.categorySlug.includes(target?.slug || '')
+      )
+    : [];
 
   return (
     <div className="w-full min-h-[calc(100vh-3.5rem)] bg-white px-4 sm:px-6 py-4">
       {/* 1. Breadcrumbs Header matching Chaldal */}
-      <div className="flex items-center gap-1.5 text-xs text-zinc-600 mb-8 select-none">
+      <div className="flex items-center gap-1.5 text-xs text-zinc-600 mb-6 select-none flex-wrap">
         <Link href="/" className="hover:text-[#7533CB] hover:underline transition-colors">
           Home
         </Link>
@@ -115,8 +137,8 @@ export default function CategoryPage() {
         })}
       </div>
 
-      {/* 2. Child Categories Row / Grid matching Chaldal screenshots */}
-      {childCategories.length > 0 ? (
+      {/* 2. IF Category Has Children -> Render Child Subcategories Row */}
+      {!isLeafCategory && (
         <div className="flex flex-wrap items-start gap-4 sm:gap-6 lg:gap-8 pb-12">
           {childCategories.map((child) => {
             const childHref = `/category/${[...slugArray, child.slug].join('/')}`;
@@ -150,9 +172,26 @@ export default function CategoryPage() {
             );
           })}
         </div>
-      ) : (
-        <div className="py-16 text-center text-zinc-400 text-sm">
-          No subcategories found for {target.name}.
+      )}
+
+      {/* 3. IF Leaf Subcategory -> Render Products Grid matching Screenshot 1:1 */}
+      {isLeafCategory && (
+        <div className="pb-16">
+          {categoryProducts.length === 0 ? (
+            <div className="py-16 text-center text-zinc-400 text-sm">
+              No products found in this subcategory yet.
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3 sm:gap-4">
+              {categoryProducts.map((prod: Product) => (
+                <ProductCard
+                  key={prod.id}
+                  product={prod}
+                  categoryName={target?.name}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
