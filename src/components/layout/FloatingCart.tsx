@@ -22,6 +22,7 @@ export const FloatingCart: React.FC = () => {
     isDrawerOpen,
     toggleDrawer,
     setDrawerOpen,
+    setAuthModalOpen,
     addItem,
     removeItem,
     clearCart,
@@ -29,24 +30,13 @@ export const FloatingCart: React.FC = () => {
 
   const [isSpecialCodeOpen, setIsSpecialCodeOpen] = useState(false);
   const [promoCode, setPromoCode] = useState('');
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [orderPlaced, setOrderPlaced] = useState(false);
 
-  const SHIPPING_FEE = totalPrice >= 1000 || totalPrice === 0 ? 0 : 59;
+  const SHIPPING_FEE = totalPrice >= 1000 || totalPrice === 0 ? 0 : 49;
   const targetForDiscount = Math.max(0, 500 - totalPrice);
   const finalTotal = totalPrice + SHIPPING_FEE;
 
   const handleCheckout = () => {
-    setIsCheckingOut(true);
-    setTimeout(() => {
-      setIsCheckingOut(false);
-      setOrderPlaced(true);
-      setTimeout(() => {
-        clearCart();
-        setOrderPlaced(false);
-        setDrawerOpen(false);
-      }, 2000);
-    }, 800);
+    setAuthModalOpen(true);
   };
 
   return (
@@ -234,23 +224,15 @@ export const FloatingCart: React.FC = () => {
 
                 {/* Chaldal Authentic Checkout Button */}
                 <div className="p-3">
-                  {orderPlaced ? (
-                    <div className="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded flex items-center justify-center gap-2">
-                      <CheckCircle2 className="w-5 h-5" />
-                      <span>Order Placed Successfully!</span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handleCheckout}
-                      disabled={isCheckingOut}
-                      className="w-full h-12 bg-[#9E70DB] hover:bg-[#7533cb] text-white rounded-lg font-bold text-base flex items-center justify-between px-4 transition-colors shadow-sm select-none"
-                    >
-                      <span className="font-bold">Checkout</span>
-                      <span className="bg-[#7533cb] px-3 py-1 rounded-md text-sm font-extrabold">
-                        ৳ {finalTotal}
-                      </span>
-                    </button>
-                  )}
+                  <button
+                    onClick={handleCheckout}
+                    className="w-full h-12 bg-[#9E70DB] hover:bg-[#854CD6] text-white rounded-lg font-bold text-base flex items-center justify-between px-4 transition-colors shadow-sm select-none"
+                  >
+                    <span className="font-bold">Checkout</span>
+                    <span className="bg-[#7533CB] px-3 py-1 rounded-md text-sm font-extrabold">
+                      ৳ {finalTotal}
+                    </span>
+                  </button>
                 </div>
               </div>
             )}

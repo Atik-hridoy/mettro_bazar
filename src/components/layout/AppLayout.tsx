@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { FloatingCart } from './FloatingCart';
+import { AuthModal } from '@/components/common/AuthModal';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -42,6 +43,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         {/* Right Sticky Cart & Drawer */}
         <FloatingCart />
       </div>
+
+      {/* Global Auth / Sign In Modal */}
+      <AuthModal />
     </div>
   );
 };

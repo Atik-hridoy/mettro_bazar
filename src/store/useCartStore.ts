@@ -16,6 +16,7 @@ interface CartState {
   totalPrice: number;
   totalItems: number;
   isDrawerOpen: boolean;
+  isAuthModalOpen: boolean;
   
   // Actions
   addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
@@ -24,6 +25,7 @@ interface CartState {
   clearCart: () => void;
   toggleDrawer: () => void;
   setDrawerOpen: (isOpen: boolean) => void;
+  setAuthModalOpen: (isOpen: boolean) => void;
 }
 
 const calculateTotals = (items: CartItem[]) => {
@@ -37,6 +39,7 @@ export const useCartStore = create<CartState>((set) => ({
   totalPrice: 0,
   totalItems: 0,
   isDrawerOpen: false,
+  isAuthModalOpen: false,
 
   addItem: (product) =>
     set((state) => {
@@ -119,5 +122,10 @@ export const useCartStore = create<CartState>((set) => ({
   setDrawerOpen: (isOpen) =>
     set({
       isDrawerOpen: isOpen,
+    }),
+
+  setAuthModalOpen: (isOpen) =>
+    set({
+      isAuthModalOpen: isOpen,
     }),
 }));
