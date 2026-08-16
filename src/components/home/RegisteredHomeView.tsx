@@ -287,7 +287,7 @@ export const RegisteredHomeView: React.FC = () => {
             Recommended For You
           </h2>
           <Link
-            href="/category/food"
+            href="/recommended"
             className="text-xs font-semibold text-[#7533CB] hover:underline flex items-center gap-0.5"
           >
             <span>View more</span>
@@ -309,7 +309,7 @@ export const RegisteredHomeView: React.FC = () => {
             Popular
           </h2>
           <Link
-            href="/category/food"
+            href="/popular"
             className="text-xs font-semibold text-[#7533CB] hover:underline flex items-center gap-0.5"
           >
             <span>View more</span>
