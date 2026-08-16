@@ -253,26 +253,26 @@ export const RegisteredHomeView: React.FC = () => {
   return (
     <div className="w-full px-4 sm:px-6 py-4 space-y-8 pb-16">
       {/* 1. Top Portrait Promo Banners Row matching Screenshot 1:1 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-1 select-none">
         {PROMO_BANNERS.map((banner) => (
           <div
             key={banner.id}
             onClick={() => handleOpenStory(banner)}
-            className="group relative h-64 sm:h-76 md:h-84 lg:h-[350px] aspect-[9/14] rounded-xl overflow-hidden shadow-xs cursor-pointer select-none transition-transform hover:-translate-y-1 border border-zinc-100"
+            className="group relative w-32 sm:w-36 md:w-40 h-52 sm:h-60 md:h-64 shrink-0 rounded-xl overflow-hidden shadow-2xs cursor-pointer select-none transition-all hover:-translate-y-1 hover:shadow-sm border border-zinc-200/80"
           >
             <img
               src={banner.image}
               alt={banner.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-3 text-white">
-              <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 mb-0.5">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-2.5 text-white">
+              <span className="text-[9px] font-black uppercase tracking-wider text-amber-300 mb-0.5">
                 {banner.badge}
               </span>
-              <h3 className="text-xs sm:text-sm font-bold leading-tight line-clamp-2">
+              <h3 className="text-xs font-bold leading-tight line-clamp-2">
                 {banner.title}
               </h3>
-              <p className="text-[11px] text-zinc-200 line-clamp-1 mt-0.5 font-normal">
+              <p className="text-[10px] text-zinc-200 line-clamp-1 mt-0.5 font-normal">
                 {banner.subtitle}
               </p>
             </div>
