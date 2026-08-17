@@ -64,21 +64,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onClick={onClose}
       />
 
-      {/* Left Sidebar Navigation */}
+      {/* Left Sidebar Navigation (Expanded Width w-64 with clear typography) */}
       <aside
-        className={`fixed left-0 top-14 bottom-0 w-56 bg-white border-r border-zinc-200 z-30 flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-14 bottom-0 w-64 bg-white border-r border-zinc-200 z-30 flex flex-col transition-transform duration-300 ease-in-out select-none ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Drawer Close / Brand Bar (Visible on mobile) */}
-        <div className="p-3 border-b border-zinc-200 flex items-center justify-between bg-zinc-50/80 md:hidden">
+        <div className="p-3.5 border-b border-zinc-200 flex items-center justify-between bg-zinc-50/80 md:hidden">
           <div className="flex items-center gap-2">
             <img
               src="/logo.png"
               alt="METRO BAZAR"
               className="h-7 w-auto object-contain"
             />
-            <span className="font-bold text-xs text-[#4A235A] font-serif italic">
+            <span className="font-bold text-sm text-[#4A235A] font-serif italic">
               METRO BAZAR
             </span>
           </div>
@@ -88,18 +88,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
             title="Close Menu"
             aria-label="Close menu"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* 1. Egg Club Banner (Authentic Tan/Gold) */}
-        <div className="p-3 bg-[#E5C384] text-zinc-900 border-b border-[#D4AE6E] shrink-0">
+        <div className="p-3.5 bg-[#E5C384] text-zinc-900 border-b border-[#D4AE6E] shrink-0">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-[10px] text-zinc-700 font-medium">{t.eggClub}</div>
-              <div className="text-xs font-bold text-zinc-900">{t.points}</div>
+              <div className="text-[11px] text-zinc-700 font-semibold">{t.eggClub}</div>
+              <div className="text-sm font-black text-zinc-900">{t.points}</div>
             </div>
-            <button className="text-[10px] font-semibold bg-white/80 hover:bg-white text-zinc-800 px-2 py-0.5 rounded-full transition-colors shadow-2xs cursor-pointer">
+            <button className="text-xs font-bold bg-white/90 hover:bg-white text-zinc-800 px-3 py-1 rounded-full transition-colors shadow-2xs cursor-pointer">
               {t.getDiscounts}
             </button>
           </div>
@@ -109,37 +109,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="py-2 border-b border-zinc-200 divide-y divide-zinc-100 shrink-0">
           <a
             href="#coupons"
-            className="flex items-center gap-2 px-3.5 py-1.5 text-zinc-700 hover:text-[#7533CB] hover:bg-zinc-50 transition-colors"
+            className="flex items-center gap-2.5 px-4 py-2 text-zinc-700 hover:text-[#7533CB] hover:bg-purple-50/40 transition-colors"
           >
-            <div className="p-0.5 bg-emerald-100 text-emerald-700 rounded-xs">
-              <Ticket className="w-3.5 h-3.5" />
+            <div className="p-1 bg-emerald-100 text-emerald-700 rounded-xs">
+              <Ticket className="w-4 h-4" />
             </div>
-            <span className="font-medium text-xs">{t.coupons}</span>
+            <span className="font-medium text-[13px] sm:text-sm">{t.coupons}</span>
           </a>
 
           <a
             href="#offers"
-            className="flex items-center gap-2 px-3.5 py-1.5 text-zinc-700 hover:text-[#7533CB] hover:bg-zinc-50 transition-colors"
+            className="flex items-center gap-2.5 px-4 py-2 text-zinc-700 hover:text-[#7533CB] hover:bg-purple-50/40 transition-colors"
           >
-            <div className="p-0.5 bg-blue-100 text-blue-600 rounded-xs">
-              <Zap className="w-3.5 h-3.5 fill-current" />
+            <div className="p-1 bg-blue-100 text-blue-600 rounded-xs">
+              <Zap className="w-4 h-4 fill-current" />
             </div>
-            <span className="font-medium text-xs">{t.offers}</span>
+            <span className="font-medium text-[13px] sm:text-sm">{t.offers}</span>
           </a>
 
           <a
             href="#favourites"
-            className="flex items-center gap-2 px-3.5 py-1.5 text-zinc-700 hover:text-[#7533CB] hover:bg-zinc-50 transition-colors"
+            className="flex items-center gap-2.5 px-4 py-2 text-zinc-700 hover:text-[#7533CB] hover:bg-purple-50/40 transition-colors"
           >
-            <div className="p-0.5 text-rose-600">
-              <Heart className="w-3.5 h-3.5 fill-current" />
+            <div className="p-1 text-rose-600">
+              <Heart className="w-4 h-4 fill-current" />
             </div>
-            <span className="font-medium text-xs">{t.favourites}</span>
+            <span className="font-medium text-[13px] sm:text-sm">{t.favourites}</span>
           </a>
         </div>
 
         {/* 3. Hierarchical Category Tree */}
-        <nav className="flex-1 overflow-y-auto py-1 custom-scrollbar">
+        <nav className="flex-1 overflow-y-auto py-1.5 custom-scrollbar">
           {CATEGORY_TREE.map((cat: CategoryItem) => {
             const hasChildren = cat.children && cat.children.length > 0;
             const isExpanded = !!expandedCategories[cat.id];
@@ -159,9 +159,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }
                     handleNavigate(catPath);
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-2 text-xs transition-colors cursor-pointer group ${
+                  className={`w-full flex items-center justify-between px-4 py-2.5 text-[13px] sm:text-sm transition-colors cursor-pointer group ${
                     isActive
-                      ? 'text-[#7533CB] font-bold bg-purple-50/50'
+                      ? 'text-[#7533CB] font-bold bg-purple-50/60'
                       : 'text-zinc-700 hover:text-[#7533CB] hover:bg-zinc-50'
                   }`}
                 >
@@ -169,13 +169,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {hasChildren && (
                     <button
                       onClick={(e) => toggleExpand(cat.id, e)}
-                      className="p-0.5 text-zinc-400 hover:text-[#7533CB] cursor-pointer"
+                      className="p-1 text-zinc-400 hover:text-[#7533CB] cursor-pointer"
                       aria-label="Toggle Subcategories"
                     >
                       {isExpanded ? (
-                        <ChevronDown className="w-3 h-3 text-[#7533CB]" />
+                        <ChevronDown className="w-3.5 h-3.5 text-[#7533CB]" />
                       ) : (
-                        <ChevronRight className="w-3 h-3 group-hover:text-[#7533CB]" />
+                        <ChevronRight className="w-3.5 h-3.5 group-hover:text-[#7533CB]" />
                       )}
                     </button>
                   )}
@@ -183,7 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* Level 2 Subcategories (Nested) */}
                 {hasChildren && isExpanded && (
-                  <div className="pl-3 py-0.5 space-y-0.5 bg-zinc-50/30 border-l border-zinc-100 ml-2">
+                  <div className="pl-3 py-1 space-y-0.5 bg-zinc-50/40 border-l border-zinc-200/80 ml-3">
                     {cat.children!.map((sub) => {
                       const subHasChildren = sub.children && sub.children.length > 0;
                       const subExpanded = !!expandedCategories[sub.id];
@@ -203,10 +203,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                               }
                               handleNavigate(subPath);
                             }}
-                            className={`w-full flex items-center justify-between px-3 py-1.5 text-[11px] rounded transition-colors cursor-pointer group ${
+                            className={`w-full flex items-center justify-between px-3.5 py-1.5 text-xs sm:text-[13px] rounded transition-colors cursor-pointer group ${
                               isSubActive
                                 ? 'text-[#7533CB] font-bold bg-purple-50'
-                                : 'text-zinc-600 hover:text-[#7533CB] hover:bg-zinc-50'
+                                : 'text-zinc-600 hover:text-[#7533CB] hover:bg-zinc-100/60'
                             }`}
                           >
                             <span className="truncate">{getCategoryName(sub.name)}</span>
@@ -217,9 +217,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 aria-label="Toggle Nested Subcategories"
                               >
                                 {subExpanded ? (
-                                  <ChevronDown className="w-2.5 h-2.5 text-[#7533CB]" />
+                                  <ChevronDown className="w-3 h-3 text-[#7533CB]" />
                                 ) : (
-                                  <ChevronRight className="w-2.5 h-2.5 group-hover:text-[#7533CB]" />
+                                  <ChevronRight className="w-3 h-3 group-hover:text-[#7533CB]" />
                                 )}
                               </button>
                             )}
@@ -227,7 +227,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                           {/* Level 3 Subcategories */}
                           {subHasChildren && subExpanded && (
-                            <div className="pl-3 py-0.5 space-y-0.5 bg-white border-l border-zinc-200/60 ml-2">
+                            <div className="pl-3 py-0.5 space-y-0.5 bg-white border-l border-zinc-200/70 ml-2">
                               {sub.children!.map((nested) => {
                                 const nestedPath = `/category/${cat.slug}/${sub.slug}/${nested.slug}`;
                                 const isNestedActive = pathname === nestedPath;
@@ -236,7 +236,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                   <Link
                                     key={nested.id}
                                     href={nestedPath}
-                                    className={`block px-2.5 py-1 text-[11px] rounded transition-colors ${
+                                    className={`block px-3 py-1.5 text-xs rounded transition-colors ${
                                       isNestedActive
                                         ? 'text-[#7533CB] font-bold bg-purple-50'
                                         : 'text-zinc-500 hover:text-[#7533CB] hover:bg-zinc-50'

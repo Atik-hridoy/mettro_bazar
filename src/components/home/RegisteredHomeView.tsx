@@ -3,9 +3,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, X } from 'lucide-react';
+import { ChevronRight, X, Search } from 'lucide-react';
 import { ProductCard } from '@/components/common/ProductCard';
 import { Product } from '@/lib/constants';
+import { useCartStore } from '@/store/useCartStore';
+import { TRANSLATIONS } from '@/lib/translations';
 
 interface BannerStory {
   id: string;
@@ -236,6 +238,9 @@ const POPULAR_PRODUCTS: Product[] = [
 
 export const RegisteredHomeView: React.FC = () => {
   const router = useRouter();
+  const { language } = useCartStore();
+  const t = TRANSLATIONS[language];
+  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
   const [activeStory, setActiveStory] = useState<BannerStory | null>(null);
 
   const handleOpenStory = (banner: BannerStory) => {
@@ -250,29 +255,57 @@ export const RegisteredHomeView: React.FC = () => {
     }
   };
 
+  const filteredRecommended = mobileSearchQuery
+    ? RECOMMENDED_PRODUCTS.filter((p) =>
+        p.name.toLowerCase().includes(mobileSearchQuery.toLowerCase())
+      )
+    : RECOMMENDED_PRODUCTS;
+
+  const filteredPopular = mobileSearchQuery
+    ? POPULAR_PRODUCTS.filter((p) =>
+        p.name.toLowerCase().includes(mobileSearchQuery.toLowerCase())
+      )
+    : POPULAR_PRODUCTS;
+
   return (
-    <div className="w-full px-4 sm:px-6 py-4 space-y-8 pb-16">
+    <div className="w-full px-3 sm:px-4 md:px-6 py-3 sm:py-4 space-y-5 sm:space-y-8 pb-16">
+      {/* Mobile Only: Constant Search Bar directly under Navbar */}
+      <div className="md:hidden w-full sticky top-14 z-20 bg-white/95 backdrop-blur-xs py-2 -mx-3 px-3 border-b border-zinc-100 shadow-2xs">
+        <div className="relative w-full">
+          <input
+            type="text"
+            value={mobileSearchQuery}
+            onChange={(e) => setMobileSearchQuery(e.target.value)}
+            placeholder={t.searchPlaceholder}
+            className="w-full pl-3.5 pr-10 py-2.5 text-xs bg-zinc-50 focus:bg-white text-zinc-900 placeholder:text-zinc-400 border border-zinc-300 rounded-lg shadow-2xs focus:outline-none focus:border-[#7533CB]"
+          />
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-zinc-400">
+            <Search className="w-4 h-4" />
+          </div>
+        </div>
+      </div>
+
       {/* 1. Top Portrait Promo Banners Row matching Screenshot 1:1 */}
-      <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-1 select-none">
+      <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-1 select-none custom-scrollbar">
         {PROMO_BANNERS.map((banner) => (
           <div
             key={banner.id}
             onClick={() => handleOpenStory(banner)}
-            className="group relative w-32 sm:w-36 md:w-40 h-52 sm:h-60 md:h-64 shrink-0 rounded-xl overflow-hidden shadow-2xs cursor-pointer select-none transition-all hover:-translate-y-1 hover:shadow-sm border border-zinc-200/80"
+            className="group relative w-28 sm:w-36 md:w-40 h-44 sm:h-60 md:h-64 shrink-0 rounded-xl overflow-hidden shadow-2xs cursor-pointer select-none transition-all hover:-translate-y-1 hover:shadow-sm border border-zinc-200/80"
           >
             <img
               src={banner.image}
               alt={banner.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-2.5 text-white">
-              <span className="text-[9px] font-black uppercase tracking-wider text-amber-300 mb-0.5">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-2 sm:p-2.5 text-white">
+              <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-amber-300 mb-0.5">
                 {banner.badge}
               </span>
-              <h3 className="text-xs font-bold leading-tight line-clamp-2">
+              <h3 className="text-[11px] sm:text-xs font-bold leading-tight line-clamp-2">
                 {banner.title}
               </h3>
-              <p className="text-[10px] text-zinc-200 line-clamp-1 mt-0.5 font-normal">
+              <p className="text-[9px] sm:text-[10px] text-zinc-200 line-clamp-1 mt-0.5 font-normal">
                 {banner.subtitle}
               </p>
             </div>
@@ -284,19 +317,20 @@ export const RegisteredHomeView: React.FC = () => {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-base sm:text-lg font-bold text-zinc-900">
-            Recommended For You
+            {t.recommendedForYou}
           </h2>
           <Link
             href="/recommended"
-            className="text-xs font-semibold text-[#7533CB] hover:underline flex items-center gap-0.5"
+            className="text-xs font-semibold text-[#7533CB] hover:underline flex items-center gap-0.5 cursor-pointer"
           >
-            <span>View more</span>
+            <span>{t.viewMore}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3 sm:gap-4">
-          {RECOMMENDED_PRODUCTS.map((prod) => (
+        {/* 2 cols on mobile, 3-7 cols on larger screens */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2.5 sm:gap-4">
+          {filteredRecommended.map((prod) => (
             <ProductCard key={prod.id} product={prod} categoryName="Recommended" />
           ))}
         </div>
@@ -306,19 +340,20 @@ export const RegisteredHomeView: React.FC = () => {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-base sm:text-lg font-bold text-zinc-900">
-            Popular
+            {t.popular}
           </h2>
           <Link
             href="/popular"
-            className="text-xs font-semibold text-[#7533CB] hover:underline flex items-center gap-0.5"
+            className="text-xs font-semibold text-[#7533CB] hover:underline flex items-center gap-0.5 cursor-pointer"
           >
-            <span>View more</span>
+            <span>{t.viewMore}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3 sm:gap-4">
-          {POPULAR_PRODUCTS.map((prod) => (
+        {/* 2 cols on mobile, 3-7 cols on larger screens */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2.5 sm:gap-4">
+          {filteredPopular.map((prod) => (
             <ProductCard key={prod.id} product={prod} categoryName="Popular" />
           ))}
         </div>
@@ -334,7 +369,7 @@ export const RegisteredHomeView: React.FC = () => {
           />
 
           {/* Tall Story Card Box */}
-          <div className="relative w-full max-w-sm sm:max-w-md h-[580px] sm:h-[620px] bg-white rounded-2xl overflow-hidden shadow-2xl z-10 flex flex-col justify-between animate-in zoom-in-95 duration-200 border border-zinc-100">
+          <div className="relative w-full max-w-sm sm:max-w-md h-[560px] sm:h-[620px] bg-white rounded-2xl overflow-hidden shadow-2xl z-10 flex flex-col justify-between animate-in zoom-in-95 duration-200 border border-zinc-100">
             {/* Top Story Progress Bar */}
             <div className="absolute top-0 left-0 right-0 z-20 px-3 pt-2">
               <div className="w-full h-1 bg-zinc-200/60 rounded-full overflow-hidden">
@@ -345,15 +380,15 @@ export const RegisteredHomeView: React.FC = () => {
             {/* Top Right Close Button */}
             <button
               onClick={() => setActiveStory(null)}
-              className="absolute top-4 right-4 z-30 p-1.5 rounded-full bg-black/10 hover:bg-black/20 text-zinc-700 transition-colors"
+              className="absolute top-4 right-4 z-30 p-1.5 rounded-full bg-black/10 hover:bg-black/20 text-zinc-700 transition-colors cursor-pointer"
               aria-label="Close story"
             >
               <X className="w-5 h-5" />
             </button>
 
             {/* Story Content Area */}
-            <div className="relative flex-1 flex flex-col items-center justify-between p-6 pt-10 text-center select-none">
-              {/* Top Bengali Headline matching Screenshot */}
+            <div className="relative flex-1 flex flex-col items-center justify-between p-5 sm:p-6 pt-10 text-center select-none">
+              {/* Top Bengali Headline */}
               <div className="z-10 max-w-xs space-y-1">
                 <h2 className="text-xl sm:text-2xl font-black text-[#4A235A] tracking-tight leading-snug">
                   {activeStory.modalTitle}
@@ -366,7 +401,7 @@ export const RegisteredHomeView: React.FC = () => {
               </div>
 
               {/* Center Character / Illustration Graphic */}
-              <div className="w-64 h-64 sm:w-72 sm:h-72 my-auto relative flex items-center justify-center">
+              <div className="w-56 h-56 sm:w-72 sm:h-72 my-auto relative flex items-center justify-center">
                 <img
                   src={activeStory.modalImage}
                   alt={activeStory.title}

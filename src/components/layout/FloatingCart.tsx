@@ -43,8 +43,8 @@ export const FloatingCart: React.FC = () => {
 
   return (
     <>
-      {/* 1. Exact Chaldal Right Sticky Cart Widget */}
-      <div className="fixed right-0 top-[45%] z-40">
+      {/* 1. Exact Chaldal Right Sticky Cart Widget (Desktop) */}
+      <div className="fixed right-0 top-[45%] z-40 hidden md:block">
         <button
           onClick={toggleDrawer}
           className="w-18 flex flex-col rounded-l-xl overflow-hidden shadow-md select-none group transition-transform hover:-translate-x-0.5 cursor-pointer"
@@ -65,8 +65,8 @@ export const FloatingCart: React.FC = () => {
         </button>
       </div>
 
-      {/* 2. Floating Chat Support Button at Bottom Right */}
-      <div className="fixed bottom-4 right-4 z-40">
+      {/* 2. Floating Chat Support Button at Bottom Right (Desktop) */}
+      <div className="fixed bottom-4 right-4 z-40 hidden md:block">
         <button
           className="w-12 h-12 rounded-full bg-[#FF6F71] hover:bg-[#FF5759] text-white shadow-lg flex items-center justify-center transition-transform hover:scale-105 cursor-pointer"
           title="Customer Support Chat"
@@ -75,7 +75,40 @@ export const FloatingCart: React.FC = () => {
         </button>
       </div>
 
-      {/* 3. Chaldal Cart Drawer */}
+      {/* 3. Mobile Bottom Sticky Action Bar matching Screenshot 1:1 */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-zinc-200 px-3 py-2 flex items-center justify-between gap-3 md:hidden shadow-lg">
+        {/* Pink Chat Button */}
+        <button
+          className="w-10 h-10 rounded-full bg-[#FF6F71] text-white flex items-center justify-center shrink-0 shadow-xs cursor-pointer"
+          title="Chat Support"
+        >
+          <MessageCircle className="w-5 h-5" />
+        </button>
+
+        {/* Purple Start Shopping Button */}
+        <button
+          onClick={toggleDrawer}
+          className="flex-1 h-10 bg-[#7533CB] hover:bg-[#632AAD] text-white font-bold text-sm rounded flex items-center justify-center shadow-xs cursor-pointer active:scale-98 transition-transform"
+        >
+          {language === 'BN' ? 'কেনাকাটা শুরু করুন' : 'Start Shopping'}
+        </button>
+
+        {/* Green Cart Bag with Badge */}
+        <button
+          onClick={toggleDrawer}
+          className="relative p-1 text-emerald-600 flex items-center justify-center shrink-0 cursor-pointer"
+          aria-label="View Cart"
+        >
+          <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <ShoppingBag className="w-5 h-5" />
+          </div>
+          <span className="absolute -top-1 -right-1 bg-[#7533CB] text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+            {totalItems}
+          </span>
+        </button>
+      </div>
+
+      {/* 4. Chaldal Cart Drawer */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
           {/* Backdrop */}

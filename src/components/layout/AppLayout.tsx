@@ -36,7 +36,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         {/* Main Content Area (Smoothly adjusts width when sidebar toggles) */}
         <main
           className={`flex-1 w-full min-w-0 bg-white transition-all duration-300 flex flex-col justify-between ${
-            isSidebarOpen ? 'md:pl-56' : 'md:pl-0'
+            isSidebarOpen ? 'md:pl-64' : 'md:pl-0'
           }`}
         >
           <div className="flex-1">
