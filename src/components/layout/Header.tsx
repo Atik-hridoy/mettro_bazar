@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Menu,
   MapPin,
@@ -31,6 +32,8 @@ export const Header: React.FC<HeaderProps> = ({
   const [selectedCity, setSelectedCity] = useState('Dhaka');
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notificationTab, setNotificationTab] = useState<'all' | 'unread'>('all');
   const [language, setLanguage] = useState<'EN' | 'BN'>('EN');
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -179,16 +182,75 @@ export const Header: React.FC<HeaderProps> = ({
             {/* If Logged In: Bell & User Profile Button matching Screenshot */}
             {user?.isLoggedIn ? (
               <div className="flex items-center gap-2.5">
-                {/* Notification Bell */}
-                <button className="p-1.5 text-zinc-700 hover:bg-zinc-100 rounded-full transition-colors relative">
-                  <Bell className="w-4 h-4" />
-                </button>
+                {/* Notification Bell Dropdown matching Chaldal 1:1 */}
+                <div
+                  className="relative"
+                  onMouseEnter={() => setIsNotificationOpen(true)}
+                  onMouseLeave={() => setIsNotificationOpen(false)}
+                >
+                  <button
+                    onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                    className={`p-1.5 rounded-full transition-colors relative cursor-pointer ${
+                      isNotificationOpen ? 'bg-purple-100 text-[#7533CB]' : 'text-zinc-700 hover:bg-zinc-100'
+                    }`}
+                    aria-label="Notifications"
+                  >
+                    <Bell className="w-4 h-4" />
+                  </button>
+
+                  {/* Notification Popover Box */}
+                  {isNotificationOpen && (
+                    <div className="absolute right-0 top-full pt-1.5 w-80 sm:w-96 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      <div className="bg-white rounded-lg shadow-2xl border border-zinc-200 p-5">
+                        {/* Header */}
+                        <div className="flex items-center justify-between pb-3">
+                          <h3 className="text-lg font-normal text-zinc-800">Notification</h3>
+                          <button className="text-xs font-semibold text-[#7533CB] hover:underline cursor-pointer">
+                            Mark Read
+                          </button>
+                        </div>
+
+                        {/* Filter Tabs */}
+                        <div className="flex items-center gap-2 pt-1 pb-3">
+                          <button
+                            onClick={() => setNotificationTab('all')}
+                            className={`px-3.5 py-1 text-xs rounded transition-colors font-medium cursor-pointer ${
+                              notificationTab === 'all'
+                                ? 'border border-[#7533CB] text-[#7533CB] bg-purple-50/50 font-semibold'
+                                : 'border border-zinc-300 text-zinc-600 bg-white hover:bg-zinc-50'
+                            }`}
+                          >
+                            All
+                          </button>
+                          <button
+                            onClick={() => setNotificationTab('unread')}
+                            className={`px-3.5 py-1 text-xs rounded transition-colors font-medium cursor-pointer ${
+                              notificationTab === 'unread'
+                                ? 'border border-[#7533CB] text-[#7533CB] bg-purple-50/50 font-semibold'
+                                : 'border border-zinc-300 text-zinc-600 bg-white hover:bg-zinc-50'
+                            }`}
+                          >
+                            Unread
+                          </button>
+                        </div>
+
+                        {/* Divider Line */}
+                        <div className="border-b border-zinc-300 my-2" />
+
+                        {/* Content Area */}
+                        <div className="py-16 text-center text-sm text-zinc-500 font-light select-none">
+                          No Notifications
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* User Profile Pill */}
                 <div className="relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center gap-2 pl-1 pr-2.5 py-1 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-full transition-colors"
+                    className="flex items-center gap-2 pl-1 pr-2.5 py-1 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-full transition-colors cursor-pointer"
                   >
                     <div className="w-6 h-6 rounded-full bg-[#7533CB] text-white flex items-center justify-center text-xs font-bold">
                       <UserIcon className="w-3.5 h-3.5" />
@@ -198,22 +260,53 @@ export const Header: React.FC<HeaderProps> = ({
                     </span>
                   </button>
 
-                  {/* User Dropdown */}
+                  {/* User Dropdown matching Chaldal 1:1 */}
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-1.5 w-44 bg-white rounded-lg shadow-lg border border-zinc-200 py-1 z-50 animate-in fade-in duration-150">
-                      <div className="px-3.5 py-2 border-b border-zinc-100">
-                        <div className="text-[11px] text-zinc-500 font-medium">Logged in as</div>
-                        <div className="text-xs font-bold text-zinc-800 truncate">{user.phone}</div>
-                      </div>
+                    <div className="absolute right-0 mt-1.5 w-48 bg-white rounded-md shadow-xl border border-zinc-200 py-0 z-50 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer block"
+                      >
+                        Your Profile
+                      </Link>
+
+                      <button
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer"
+                      >
+                        Your Orders
+                      </button>
+
+                      <button
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer"
+                      >
+                        Payment History
+                      </button>
+
+                      <button
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer"
+                      >
+                        Payment Methods
+                      </button>
+
+                      <button
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer"
+                      >
+                        Change Password
+                      </button>
+
                       <button
                         onClick={() => {
                           logoutUser();
                           setIsUserMenuOpen(false);
                         }}
-                        className="w-full px-3.5 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors font-medium text-left"
+                        className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-rose-50 hover:text-rose-600 transition-colors text-left font-normal cursor-pointer"
                       >
-                        <LogOut className="w-3.5 h-3.5" />
-                        <span>Sign Out</span>
+                        Log out
                       </button>
                     </div>
                   )}
@@ -223,7 +316,7 @@ export const Header: React.FC<HeaderProps> = ({
               /* Login Button */
               <button
                 onClick={() => setAuthModalOpen(true)}
-                className="px-4 py-1.5 bg-[#7533CB] hover:bg-[#632AAD] text-white text-xs font-semibold rounded shadow-xs transition-colors"
+                className="px-4 py-1.5 bg-[#7533CB] hover:bg-[#632AAD] text-white text-xs font-semibold rounded shadow-xs transition-colors cursor-pointer"
               >
                 Login
               </button>

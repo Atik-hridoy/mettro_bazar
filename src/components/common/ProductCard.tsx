@@ -15,7 +15,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   categoryName = 'General',
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const { cartItems, addItem, removeItem } = useCartStore();
+  const { cartItems, addItem, removeItem, setSelectedDetailProduct } = useCartStore();
 
   const inCartItem = cartItems.find((item) => item.id === product.id);
   const qtyInCart = inCartItem?.quantity || 0;
@@ -42,22 +42,31 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="bg-white border border-zinc-200/90 rounded-lg p-2.5 sm:p-3 flex flex-col justify-between hover:shadow-md transition-all duration-200 group relative select-none h-full"
+      className="bg-white rounded-lg p-2 sm:p-2.5 flex flex-col justify-between hover:shadow-sm transition-all duration-150 group relative select-none w-full border border-transparent hover:border-zinc-100"
     >
-      {/* 1. Product Image & Floating Add / Counter Button */}
-      <div className="w-full aspect-square mb-2 relative flex items-center justify-center p-2 bg-white rounded-md">
+      {/* 1. Fixed Height Image Box - Tapping image directly adds to cart */}
+      <div
+        onClick={handleAdd}
+        className="w-full h-36 sm:h-40 mb-3 relative flex items-center justify-center bg-white cursor-pointer overflow-hidden rounded-md"
+      >
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+          className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-200"
+          loading="lazy"
+          onError={(e) => {
+            // Fallback for broken image
+            (e.target as HTMLImageElement).src =
+              'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&q=80';
+          }}
         />
 
-        {/* Not in Cart: Larger Circular Plus Button */}
+        {/* Not in Cart: Larger Circular Plus Button in exact bottom-right */}
         {qtyInCart === 0 && (
-          <div className="absolute bottom-1 right-1 z-10">
+          <div className="absolute bottom-0 right-0 z-10">
             <button
               onClick={handleAdd}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border-2 border-[#7533CB] text-[#7533CB] hover:bg-[#7533CB] hover:text-white flex items-center justify-center transition-all duration-150 shadow-xs hover:shadow-sm active:scale-95 cursor-pointer"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border-2 border-[#7533CB] text-[#7533CB] hover:bg-[#7533CB] hover:text-white flex items-center justify-center transition-all duration-150 shadow-2xs active:scale-95 cursor-pointer"
               aria-label={`Add ${product.name} to cart`}
             >
               <Plus className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
@@ -92,7 +101,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* In Cart & Unhovered: Solid Purple Circle Badge */}
         {qtyInCart > 0 && !isHovered && (
-          <div className="absolute bottom-1 right-1 z-10 animate-in fade-in zoom-in-95 duration-100">
+          <div className="absolute bottom-0 right-0 z-10 animate-in fade-in zoom-in-95 duration-100">
             <div
               onClick={handleAdd}
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#7533CB] text-white font-bold text-sm sm:text-base flex items-center justify-center shadow-xs cursor-pointer hover:bg-[#632AAD] transition-colors"
@@ -104,17 +113,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </div>
 
-      {/* 2. Content Info: Price & Title perfectly aligned */}
+      {/* 2. Content Info: Price & Title on identical baselines */}
       <div className="flex flex-col flex-1 justify-between">
-        <div>
-          {/* Price Line */}
-          <div className="flex items-baseline gap-1.5 min-h-[22px]">
+        <div
+          onClick={() => setSelectedDetailProduct(product)}
+          className="cursor-pointer group/text"
+        >
+          {/* Price Line matching Chaldal Colors */}
+          <div className="flex items-baseline gap-1.5 h-6">
             {product.originalPrice ? (
               <>
-                <span className="text-sm sm:text-base font-bold text-rose-600">
+                <span className="text-sm sm:text-base font-bold text-[#E91E63]">
                   ৳{product.price}
                 </span>
-                <span className="text-xs text-zinc-400 line-through">
+                <span className="text-xs text-zinc-600 line-through font-medium">
                   ৳{product.originalPrice}
                 </span>
               </>
@@ -125,17 +137,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             )}
           </div>
 
-          {/* Product Title (Consistent 2-line height) */}
-          <h3 className="text-xs sm:text-[13px] font-normal text-zinc-800 line-clamp-2 leading-snug tracking-normal min-h-[36px] my-1">
+          {/* Product Title (Strict 2-line uniform box) */}
+          <h3 className="text-xs sm:text-[13px] font-normal text-zinc-800 group-hover/text:text-[#7533CB] line-clamp-2 leading-snug tracking-normal h-9 my-1 transition-colors">
             {product.name}
           </h3>
         </div>
 
         {/* 3. Bottom Meta: Unit & Delivery Estimate */}
-        <div className="pt-2 mt-2 flex items-center justify-between text-[11px] sm:text-xs text-zinc-400 border-t border-zinc-100">
+        <div className="pt-2 flex items-center justify-between text-[11px] sm:text-xs text-zinc-400 font-light">
           <span className="truncate">{product.unit}</span>
-          <span className="flex items-center gap-1 text-zinc-500 font-medium shrink-0">
-            <Clock className="w-3.5 h-3.5 text-zinc-400" />
+          <span className="flex items-center gap-1 text-zinc-500 font-normal shrink-0">
+            <Clock className="w-3 h-3 text-zinc-400" />
             <span>{product.deliveryTime}</span>
           </span>
         </div>

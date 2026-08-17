@@ -5,6 +5,7 @@ import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { FloatingCart } from './FloatingCart';
 import { AuthModal } from '@/components/common/AuthModal';
+import { ProductDetailModal } from '@/components/common/ProductDetailModal';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -46,6 +47,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       {/* Global Auth / Sign In Modal */}
       <AuthModal />
+
+      {/* Global Product Detail & Recommendations Modal matching Chaldal 1:1 */}
+      <ProductDetailModal />
     </div>
   );
 };
