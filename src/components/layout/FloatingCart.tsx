@@ -10,9 +10,9 @@ import {
   Info,
   ChevronUp,
   ChevronDown,
-  CheckCircle2,
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
+import { TRANSLATIONS } from '@/lib/translations';
 
 export const FloatingCart: React.FC = () => {
   const {
@@ -20,16 +20,18 @@ export const FloatingCart: React.FC = () => {
     totalPrice,
     totalItems,
     isDrawerOpen,
+    language,
     toggleDrawer,
     setDrawerOpen,
     setAuthModalOpen,
     addItem,
     removeItem,
-    clearCart,
   } = useCartStore();
 
   const [isSpecialCodeOpen, setIsSpecialCodeOpen] = useState(false);
   const [promoCode, setPromoCode] = useState('');
+
+  const t = TRANSLATIONS[language];
 
   const SHIPPING_FEE = totalPrice >= 1000 || totalPrice === 0 ? 0 : 49;
   const targetForDiscount = Math.max(0, 500 - totalPrice);
@@ -45,14 +47,14 @@ export const FloatingCart: React.FC = () => {
       <div className="fixed right-0 top-[45%] z-40">
         <button
           onClick={toggleDrawer}
-          className="w-18 flex flex-col rounded-l-xl overflow-hidden shadow-md select-none group transition-transform hover:-translate-x-0.5"
+          className="w-18 flex flex-col rounded-l-xl overflow-hidden shadow-md select-none group transition-transform hover:-translate-x-0.5 cursor-pointer"
           aria-label="Shopping Cart"
         >
           {/* Top Half: #7F4CC1 */}
           <div className="bg-[#7F4CC1] group-hover:bg-[#723FB5] text-white py-2 px-2.5 flex flex-col items-center justify-center">
             <ShoppingBag className="w-5 h-5 mb-0.5" />
             <span className="text-[11px] font-bold italic tracking-tight">
-              {totalItems} {totalItems === 1 ? 'item' : 'items'}
+              {totalItems} {t.items}
             </span>
           </div>
 
@@ -66,7 +68,7 @@ export const FloatingCart: React.FC = () => {
       {/* 2. Floating Chat Support Button at Bottom Right */}
       <div className="fixed bottom-4 right-4 z-40">
         <button
-          className="w-12 h-12 rounded-full bg-[#FF6F71] hover:bg-[#FF5759] text-white shadow-lg flex items-center justify-center transition-transform hover:scale-105"
+          className="w-12 h-12 rounded-full bg-[#FF6F71] hover:bg-[#FF5759] text-white shadow-lg flex items-center justify-center transition-transform hover:scale-105 cursor-pointer"
           title="Customer Support Chat"
         >
           <MessageCircle className="w-6 h-6" />
@@ -84,10 +86,14 @@ export const FloatingCart: React.FC = () => {
 
           {/* Sliding Drawer Container */}
           <div className="relative w-full max-w-sm bg-white h-full shadow-2xl z-10 flex flex-col animate-in slide-in-from-right duration-200">
-            {/* Top Red Incentive Banner */}
+            {/* Top Incentive Banner */}
             <div className="bg-[#bc3a29] text-white px-4 py-1.5 text-xs font-semibold flex items-center justify-between">
               <span>
-                {targetForDiscount > 0
+                {language === 'BN'
+                  ? targetForDiscount > 0
+                    ? `আরও ৳${targetForDiscount} কেনাকাটা করুন এবং ৳১০ ফি বাঁচান`
+                    : '🎉 আপনি বিশেষ ডেলিভারি ডিসকাউন্ট উপভোগ করছেন!'
+                  : targetForDiscount > 0
                   ? `Shop ৳${targetForDiscount} more and save ৳10 fee`
                   : '🎉 You have unlocked special delivery discount!'}
               </span>
@@ -101,10 +107,10 @@ export const FloatingCart: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold italic text-zinc-900">
-                    {totalItems} {totalItems === 1 ? 'item' : 'items'}
+                    {totalItems} {t.items}
                   </h3>
                   <p className="text-[11px] text-emerald-700 font-medium flex items-center gap-1">
-                    Shipping Fee: ৳ {SHIPPING_FEE}{' '}
+                    {language === 'BN' ? 'ডেলিভারি ফি:' : 'Shipping Fee:'} ৳ {SHIPPING_FEE}{' '}
                     <Info className="w-3 h-3 text-emerald-600 inline" />
                   </p>
                 </div>
@@ -113,7 +119,7 @@ export const FloatingCart: React.FC = () => {
               {/* Close Button '>>' */}
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="text-[#7F4CC1] hover:text-[#632AAD] p-1 font-black"
+                className="text-[#7F4CC1] hover:text-[#632AAD] p-1 font-black cursor-pointer"
                 title="Close Cart"
               >
                 <ChevronsRight className="w-6 h-6" />
@@ -126,10 +132,14 @@ export const FloatingCart: React.FC = () => {
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
                   <ShoppingBag className="w-12 h-12 text-zinc-300" />
                   <p className="text-sm font-semibold text-zinc-700">
-                    Your shopping bag is empty
+                    {language === 'BN'
+                      ? 'আপনার শপিং ব্যাগটি খালি'
+                      : 'Your shopping bag is empty'}
                   </p>
                   <p className="text-xs text-zinc-400">
-                    Explore daily essentials and add products to your bag.
+                    {language === 'BN'
+                      ? 'প্রয়োজনীয় নিত্যপণ্য খুঁজে ব্যাগে যোগ করুন।'
+                      : 'Explore daily essentials and add products to your bag.'}
                   </p>
                 </div>
               ) : (
@@ -163,7 +173,7 @@ export const FloatingCart: React.FC = () => {
                         <div className="flex items-center border border-zinc-300 rounded text-xs bg-zinc-50">
                           <button
                             onClick={() => removeItem(item.id)}
-                            className="px-1.5 py-0.5 hover:bg-zinc-200 text-zinc-600"
+                            className="px-1.5 py-0.5 hover:bg-zinc-200 text-zinc-600 cursor-pointer"
                             aria-label="Decrease"
                           >
                             <Minus className="w-3 h-3" />
@@ -173,7 +183,7 @@ export const FloatingCart: React.FC = () => {
                           </span>
                           <button
                             onClick={() => addItem(item)}
-                            className="px-1.5 py-0.5 hover:bg-zinc-200 text-zinc-600"
+                            className="px-1.5 py-0.5 hover:bg-zinc-200 text-zinc-600 cursor-pointer"
                             aria-label="Increase"
                           >
                             <Plus className="w-3 h-3" />
@@ -196,14 +206,14 @@ export const FloatingCart: React.FC = () => {
                 <div className="border-b border-zinc-200 bg-zinc-50">
                   <button
                     onClick={() => setIsSpecialCodeOpen(!isSpecialCodeOpen)}
-                    className="w-full py-2 px-4 text-xs font-semibold text-zinc-600 flex items-center justify-center gap-1 hover:text-zinc-900"
+                    className="w-full py-2 px-4 text-xs font-semibold text-zinc-600 flex items-center justify-center gap-1 hover:text-zinc-900 cursor-pointer"
                   >
                     {isSpecialCodeOpen ? (
                       <ChevronDown className="w-3.5 h-3.5" />
                     ) : (
                       <ChevronUp className="w-3.5 h-3.5" />
                     )}
-                    <span>Enter special code</span>
+                    <span>{language === 'BN' ? 'স্পেশাল কোড লিখুন' : 'Enter special code'}</span>
                   </button>
 
                   {isSpecialCodeOpen && (
@@ -212,11 +222,11 @@ export const FloatingCart: React.FC = () => {
                         type="text"
                         value={promoCode}
                         onChange={(e) => setPromoCode(e.target.value)}
-                        placeholder="Enter coupon code"
+                        placeholder={language === 'BN' ? 'কুপন কোড দিন' : 'Enter coupon code'}
                         className="flex-1 px-3 py-1.5 text-xs border border-zinc-300 rounded bg-white"
                       />
-                      <button className="px-3 py-1.5 bg-zinc-800 text-white text-xs font-semibold rounded">
-                        Apply
+                      <button className="px-3 py-1.5 bg-zinc-800 text-white text-xs font-semibold rounded cursor-pointer">
+                        {language === 'BN' ? 'প্রয়োগ করুন' : 'Apply'}
                       </button>
                     </div>
                   )}
@@ -226,9 +236,9 @@ export const FloatingCart: React.FC = () => {
                 <div className="p-3">
                   <button
                     onClick={handleCheckout}
-                    className="w-full h-12 bg-[#9E70DB] hover:bg-[#854CD6] text-white rounded-lg font-bold text-base flex items-center justify-between px-4 transition-colors shadow-sm select-none"
+                    className="w-full h-12 bg-[#9E70DB] hover:bg-[#854CD6] text-white rounded-lg font-bold text-base flex items-center justify-between px-4 transition-colors shadow-sm select-none cursor-pointer"
                   >
-                    <span className="font-bold">Checkout</span>
+                    <span className="font-bold">{t.checkout}</span>
                     <span className="bg-[#7533CB] px-3 py-1 rounded-md text-sm font-extrabold">
                       ৳ {finalTotal}
                     </span>

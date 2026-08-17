@@ -33,6 +33,7 @@ interface CartState {
   isDrawerOpen: boolean;
   isAuthModalOpen: boolean;
   selectedDetailProduct: Product | null;
+  language: 'EN' | 'BN';
   user: User | null;
   selectedAddress: Address | null;
   savedAddresses: Address[];
@@ -46,6 +47,7 @@ interface CartState {
   setDrawerOpen: (isOpen: boolean) => void;
   setAuthModalOpen: (isOpen: boolean) => void;
   setSelectedDetailProduct: (product: Product | null) => void;
+  setLanguage: (lang: 'EN' | 'BN') => void;
   loginUser: (phone: string, name?: string) => void;
   logoutUser: () => void;
   setSelectedAddress: (address: Address | null) => void;
@@ -65,6 +67,7 @@ export const useCartStore = create<CartState>((set) => ({
   isDrawerOpen: false,
   isAuthModalOpen: false,
   selectedDetailProduct: null,
+  language: 'EN',
   user: null,
   selectedAddress: null,
   savedAddresses: [
@@ -168,6 +171,11 @@ export const useCartStore = create<CartState>((set) => ({
   setSelectedDetailProduct: (product) =>
     set({
       selectedDetailProduct: product,
+    }),
+
+  setLanguage: (lang) =>
+    set({
+      language: lang,
     }),
 
   loginUser: (phone, name) =>

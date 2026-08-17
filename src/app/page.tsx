@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { HeroSection } from '@/components/home/HeroSection';
 import { FeatureCards } from '@/components/home/FeatureCards';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
+import { GuestBottomSection } from '@/components/home/GuestBottomSection';
 import { RegisteredHomeView } from '@/components/home/RegisteredHomeView';
 import { useCartStore } from '@/store/useCartStore';
 
@@ -28,6 +29,9 @@ export default function HomePage() {
 
           {/* 3. Popular Categories horizontal row & Brand logos */}
           <CategoryGrid onSelectCategory={(catId) => setSelectedCategory(catId)} />
+
+          {/* 4. Bottom Section: Currently Delivering In & Common Questions FAQ matching Screenshot 1:1 */}
+          <GuestBottomSection />
         </>
       )}
     </div>

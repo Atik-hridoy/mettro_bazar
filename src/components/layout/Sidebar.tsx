@@ -12,6 +12,8 @@ import {
   X,
 } from 'lucide-react';
 import { CATEGORY_TREE, CategoryItem } from '@/lib/constants';
+import { useCartStore } from '@/store/useCartStore';
+import { TRANSLATIONS, CATEGORY_TRANSLATIONS } from '@/lib/translations';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -24,6 +26,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { language } = useCartStore();
+  const t = TRANSLATIONS[language];
+
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     food: true,
   });
@@ -40,9 +45,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     router.push(path);
   };
 
+  const getCategoryName = (name: string) => {
+    if (language === 'BN' && CATEGORY_TRANSLATIONS[name]) {
+      return CATEGORY_TRANSLATIONS[name];
+    }
+    return name;
+  };
+
   return (
     <>
-      {/* Mobile Backdrop Overlay (only on small screens when open) */}
+      {/* Mobile Backdrop Overlay */}
       <div
         className={`fixed inset-0 top-14 bg-black/40 backdrop-blur-2xs z-30 md:hidden transition-opacity duration-300 ${
           isOpen
@@ -52,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onClick={onClose}
       />
 
-      {/* Left Sidebar Navigation (Open by default, can be toggled by user) */}
+      {/* Left Sidebar Navigation */}
       <aside
         className={`fixed left-0 top-14 bottom-0 w-56 bg-white border-r border-zinc-200 z-30 flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -72,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-zinc-500 hover:text-zinc-800 rounded hover:bg-zinc-200/60 transition-colors"
+            className="p-1 text-zinc-500 hover:text-zinc-800 rounded hover:bg-zinc-200/60 transition-colors cursor-pointer"
             title="Close Menu"
             aria-label="Close menu"
           >
@@ -84,11 +96,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-3 bg-[#E5C384] text-zinc-900 border-b border-[#D4AE6E] shrink-0">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-[10px] text-zinc-700 font-medium">Egg Club</div>
-              <div className="text-xs font-bold text-zinc-900">0 Points</div>
+              <div className="text-[10px] text-zinc-700 font-medium">{t.eggClub}</div>
+              <div className="text-xs font-bold text-zinc-900">{t.points}</div>
             </div>
-            <button className="text-[10px] font-semibold bg-white/80 hover:bg-white text-zinc-800 px-2 py-0.5 rounded-full transition-colors shadow-2xs">
-              Get Discounts
+            <button className="text-[10px] font-semibold bg-white/80 hover:bg-white text-zinc-800 px-2 py-0.5 rounded-full transition-colors shadow-2xs cursor-pointer">
+              {t.getDiscounts}
             </button>
           </div>
         </div>
@@ -102,7 +114,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="p-0.5 bg-emerald-100 text-emerald-700 rounded-xs">
               <Ticket className="w-3.5 h-3.5" />
             </div>
-            <span className="font-medium text-xs">Coupons</span>
+            <span className="font-medium text-xs">{t.coupons}</span>
           </a>
 
           <a
@@ -112,7 +124,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="p-0.5 bg-blue-100 text-blue-600 rounded-xs">
               <Zap className="w-3.5 h-3.5 fill-current" />
             </div>
-            <span className="font-medium text-xs">Offers</span>
+            <span className="font-medium text-xs">{t.offers}</span>
           </a>
 
           <a
@@ -122,7 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="p-0.5 text-rose-600">
               <Heart className="w-3.5 h-3.5 fill-current" />
             </div>
-            <span className="font-medium text-xs">Favourites</span>
+            <span className="font-medium text-xs">{t.favourites}</span>
           </a>
         </div>
 
@@ -153,11 +165,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       : 'text-zinc-700 hover:text-[#7533CB] hover:bg-zinc-50'
                   }`}
                 >
-                  <span className="truncate">{cat.name}</span>
+                  <span className="truncate">{getCategoryName(cat.name)}</span>
                   {hasChildren && (
                     <button
                       onClick={(e) => toggleExpand(cat.id, e)}
-                      className="p-0.5 text-zinc-400 hover:text-[#7533CB]"
+                      className="p-0.5 text-zinc-400 hover:text-[#7533CB] cursor-pointer"
                       aria-label="Toggle Subcategories"
                     >
                       {isExpanded ? (
@@ -191,46 +203,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
                               }
                               handleNavigate(subPath);
                             }}
-                            className={`w-full flex items-center justify-between px-2.5 py-1.5 text-[11px] transition-colors cursor-pointer group ${
+                            className={`w-full flex items-center justify-between px-3 py-1.5 text-[11px] rounded transition-colors cursor-pointer group ${
                               isSubActive
                                 ? 'text-[#7533CB] font-bold bg-purple-50'
                                 : 'text-zinc-600 hover:text-[#7533CB] hover:bg-zinc-50'
                             }`}
                           >
-                            <span className="truncate">{sub.name}</span>
+                            <span className="truncate">{getCategoryName(sub.name)}</span>
                             {subHasChildren && (
                               <button
                                 onClick={(e) => toggleExpand(sub.id, e)}
-                                className="p-0.5 text-zinc-400 hover:text-[#7533CB]"
+                                className="p-0.5 text-zinc-400 hover:text-[#7533CB] cursor-pointer"
+                                aria-label="Toggle Nested Subcategories"
                               >
                                 {subExpanded ? (
-                                  <ChevronDown className="w-3 h-3 text-[#7533CB]" />
+                                  <ChevronDown className="w-2.5 h-2.5 text-[#7533CB]" />
                                 ) : (
-                                  <ChevronRight className="w-3 h-3 group-hover:text-[#7533CB]" />
+                                  <ChevronRight className="w-2.5 h-2.5 group-hover:text-[#7533CB]" />
                                 )}
                               </button>
                             )}
                           </div>
 
-                          {/* Level 3 Children (Nested) */}
+                          {/* Level 3 Subcategories */}
                           {subHasChildren && subExpanded && (
-                            <div className="pl-3 py-0.5 space-y-0.5">
-                              {sub.children!.map((child) => {
-                                const childPath = `/category/${cat.slug}/${sub.slug}/${child.slug}`;
-                                const isChildActive = pathname === childPath;
+                            <div className="pl-3 py-0.5 space-y-0.5 bg-white border-l border-zinc-200/60 ml-2">
+                              {sub.children!.map((nested) => {
+                                const nestedPath = `/category/${cat.slug}/${sub.slug}/${nested.slug}`;
+                                const isNestedActive = pathname === nestedPath;
 
                                 return (
-                                  <div
-                                    key={child.id}
-                                    onClick={() => handleNavigate(childPath)}
-                                    className={`w-full px-2 py-1 text-[11px] cursor-pointer transition-colors ${
-                                      isChildActive
-                                        ? 'text-[#7533CB] font-semibold bg-purple-50/70'
+                                  <Link
+                                    key={nested.id}
+                                    href={nestedPath}
+                                    className={`block px-2.5 py-1 text-[11px] rounded transition-colors ${
+                                      isNestedActive
+                                        ? 'text-[#7533CB] font-bold bg-purple-50'
                                         : 'text-zinc-500 hover:text-[#7533CB] hover:bg-zinc-50'
                                     }`}
                                   >
-                                    <span className="truncate">{child.name}</span>
-                                  </div>
+                                    <span className="truncate">{getCategoryName(nested.name)}</span>
+                                  </Link>
                                 );
                               })}
                             </div>
@@ -243,47 +256,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
             );
           })}
-
-          {/* Special Feature Links */}
-          <div className="pt-2 mt-2 border-t border-zinc-100 space-y-0.5">
-            <a
-              href="#safety-center"
-              className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-zinc-800 hover:text-[#7533CB] hover:bg-zinc-50 transition-colors"
-            >
-              <div className="w-5 h-5 rounded-full bg-[#8E44AD] text-white flex items-center justify-center shadow-2xs shrink-0">
-                <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
-                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
-                </svg>
-              </div>
-              <span className="font-medium">Safety Center</span>
-            </a>
-
-            <a
-              href="#premium-care"
-              className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-zinc-800 hover:text-[#7533CB] hover:bg-zinc-50 transition-colors"
-            >
-              <div className="w-5 h-5 rounded-full bg-amber-50 border border-amber-300 text-amber-600 flex items-center justify-center shrink-0">
-                <svg className="w-3.5 h-3.5 fill-amber-500" viewBox="0 0 24 24">
-                  <path d="M12 2l2.4 5.5L20 8.2l-4 4.1 1 6-5-2.8-5 2.8 1-6-4-4.1 5.6-.7L12 2z" />
-                </svg>
-              </div>
-              <span className="font-medium">Premium Care</span>
-            </a>
-
-            <a
-              href="#help"
-              className="w-full flex items-center px-3.5 py-2 text-xs text-zinc-700 hover:text-[#7533CB] hover:bg-zinc-50 transition-colors font-normal"
-            >
-              Help
-            </a>
-
-            <a
-              href="#complaint"
-              className="w-full flex items-center px-3.5 py-2 text-xs text-zinc-700 hover:text-[#7533CB] hover:bg-zinc-50 transition-colors font-normal"
-            >
-              File a complaint
-            </a>
-          </div>
         </nav>
       </aside>
     </>

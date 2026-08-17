@@ -16,6 +16,7 @@ import {
 import { CITIES } from '@/lib/constants';
 import logo from '@/assets/logo.png';
 import { useCartStore } from '@/store/useCartStore';
+import { TRANSLATIONS } from '@/lib/translations';
 
 interface HeaderProps {
   onToggleMobileSidebar?: () => void;
@@ -28,14 +29,15 @@ export const Header: React.FC<HeaderProps> = ({
   searchQuery = '',
   onSearchChange,
 }) => {
-  const { setAuthModalOpen, user, logoutUser } = useCartStore();
+  const { setAuthModalOpen, user, logoutUser, language, setLanguage } = useCartStore();
   const [selectedCity, setSelectedCity] = useState('Dhaka');
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notificationTab, setNotificationTab] = useState<'all' | 'unread'>('all');
-  const [language, setLanguage] = useState<'EN' | 'BN'>('EN');
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const t = TRANSLATIONS[language];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className="flex items-center gap-1 text-xs font-semibold text-[#632AAD] hover:bg-purple-50 px-2 py-1 rounded transition-colors"
               >
                 {user?.isLoggedIn && (
-                  <span className="text-zinc-500 font-normal mr-0.5 hidden sm:inline">Delivering to</span>
+                  <span className="text-zinc-500 font-normal mr-0.5 hidden sm:inline">{t.deliveringTo}</span>
                 )}
                 <MapPin className="w-3.5 h-3.5 text-[#632AAD]" />
                 <span>{selectedCity}</span>
@@ -144,7 +146,7 @@ export const Header: React.FC<HeaderProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-                placeholder="Search for products (e.g. eggs, milk, potato)"
+                placeholder={t.searchPlaceholder}
                 className="w-full pl-3 pr-9 py-1.5 text-xs bg-zinc-50 hover:bg-white focus:bg-white text-zinc-900 placeholder:text-zinc-400 border border-zinc-300 rounded focus:outline-none focus:border-[#7533CB]"
               />
               <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-zinc-400">
@@ -155,11 +157,11 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right: Language switch & Login / User Profile */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Language switch */}
+            {/* Real Working Language switch */}
             <div className="flex items-center border border-zinc-300 rounded overflow-hidden text-xs">
               <button
                 onClick={() => setLanguage('EN')}
-                className={`px-2 py-0.5 font-bold transition-colors ${
+                className={`px-2 py-0.5 font-bold transition-colors cursor-pointer ${
                   language === 'EN'
                     ? 'bg-[#7533CB] text-white'
                     : 'bg-white text-zinc-600 hover:bg-zinc-50'
@@ -169,7 +171,7 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
               <button
                 onClick={() => setLanguage('BN')}
-                className={`px-2 py-0.5 font-bold transition-colors ${
+                className={`px-2 py-0.5 font-bold transition-colors cursor-pointer ${
                   language === 'BN'
                     ? 'bg-[#7533CB] text-white'
                     : 'bg-white text-zinc-600 hover:bg-zinc-50'
@@ -204,9 +206,9 @@ export const Header: React.FC<HeaderProps> = ({
                       <div className="bg-white rounded-lg shadow-2xl border border-zinc-200 p-5">
                         {/* Header */}
                         <div className="flex items-center justify-between pb-3">
-                          <h3 className="text-lg font-normal text-zinc-800">Notification</h3>
+                          <h3 className="text-lg font-normal text-zinc-800">{t.notification}</h3>
                           <button className="text-xs font-semibold text-[#7533CB] hover:underline cursor-pointer">
-                            Mark Read
+                            {t.markRead}
                           </button>
                         </div>
 
@@ -220,7 +222,7 @@ export const Header: React.FC<HeaderProps> = ({
                                 : 'border border-zinc-300 text-zinc-600 bg-white hover:bg-zinc-50'
                             }`}
                           >
-                            All
+                            {t.all}
                           </button>
                           <button
                             onClick={() => setNotificationTab('unread')}
@@ -230,7 +232,7 @@ export const Header: React.FC<HeaderProps> = ({
                                 : 'border border-zinc-300 text-zinc-600 bg-white hover:bg-zinc-50'
                             }`}
                           >
-                            Unread
+                            {t.unread}
                           </button>
                         </div>
 
@@ -239,7 +241,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                         {/* Content Area */}
                         <div className="py-16 text-center text-sm text-zinc-500 font-light select-none">
-                          No Notifications
+                          {t.noNotifications}
                         </div>
                       </div>
                     </div>
@@ -268,35 +270,38 @@ export const Header: React.FC<HeaderProps> = ({
                         onClick={() => setIsUserMenuOpen(false)}
                         className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer block"
                       >
-                        Your Profile
+                        {t.yourProfile}
+                      </Link>
+
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer block"
+                      >
+                        {t.yourOrders}
+                      </Link>
+
+                      <Link
+                        href="/payments"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer block"
+                      >
+                        {t.paymentHistory}
+                      </Link>
+
+                      <Link
+                        href="/payments"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer block"
+                      >
+                        {t.paymentMethods}
                       </Link>
 
                       <button
                         onClick={() => setIsUserMenuOpen(false)}
                         className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer"
                       >
-                        Your Orders
-                      </button>
-
-                      <button
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer"
-                      >
-                        Payment History
-                      </button>
-
-                      <button
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer"
-                      >
-                        Payment Methods
-                      </button>
-
-                      <button
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer"
-                      >
-                        Change Password
+                        {t.changePassword}
                       </button>
 
                       <button
@@ -306,7 +311,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }}
                         className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-rose-50 hover:text-rose-600 transition-colors text-left font-normal cursor-pointer"
                       >
-                        Log out
+                        {t.logout}
                       </button>
                     </div>
                   )}
@@ -318,7 +323,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => setAuthModalOpen(true)}
                 className="px-4 py-1.5 bg-[#7533CB] hover:bg-[#632AAD] text-white text-xs font-semibold rounded shadow-xs transition-colors cursor-pointer"
               >
-                Login
+                {t.login}
               </button>
             )}
           </div>

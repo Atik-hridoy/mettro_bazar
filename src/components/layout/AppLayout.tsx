@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
+import { Footer } from './Footer';
 import { FloatingCart } from './FloatingCart';
 import { AuthModal } from '@/components/common/AuthModal';
 import { ProductDetailModal } from '@/components/common/ProductDetailModal';
@@ -34,11 +35,16 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
         {/* Main Content Area (Smoothly adjusts width when sidebar toggles) */}
         <main
-          className={`flex-1 w-full min-w-0 bg-white transition-all duration-300 ${
+          className={`flex-1 w-full min-w-0 bg-white transition-all duration-300 flex flex-col justify-between ${
             isSidebarOpen ? 'md:pl-56' : 'md:pl-0'
           }`}
         >
-          {children}
+          <div className="flex-1">
+            {children}
+          </div>
+
+          {/* Authentic Footer */}
+          <Footer />
         </main>
 
         {/* Right Sticky Cart & Drawer */}
