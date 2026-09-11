@@ -23,53 +23,9 @@ import {
 import { useCartStore, Address } from '@/store/useCartStore';
 import { ProductCard } from '@/components/common/ProductCard';
 import { AddressModal } from '@/components/common/AddressModal';
-import { Product } from '@/lib/constants';
+import { Product, CHALDAL_PRODUCTS } from '@/lib/constants';
 import { TRANSLATIONS } from '@/lib/translations';
-import { fetchUserProfileFromBackend, fetchAddressesFromBackend, placeOrderOnBackend } from '@/lib/api';
-
-// 4 Upsell Items under "Need Anything Else?" matching Screenshot
-const UPSELL_PRODUCTS: Product[] = [
-  {
-    id: 'casio-1',
-    name: 'Casio Scientific Calculator (FX 991ES Plus 2nd Edition)',
-    price: 1339,
-    unit: 'each',
-    image: 'https://images.unsplash.com/photo-1611125832047-1d7ad1e8e48f?w=400&q=80',
-    deliveryTime: '3 hrs',
-    categorySlug: 'stationery-office',
-    inStock: true,
-  },
-  {
-    id: 'biomil-1',
-    name: 'Biomil 2 Milk (6-12 months) Tin',
-    price: 1950,
-    unit: '1 kg',
-    image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&q=80',
-    deliveryTime: '3 hrs',
-    categorySlug: 'baby-care',
-    inStock: true,
-  },
-  {
-    id: 'maya-1',
-    name: 'Maya All Natural Spanish Rosehip Seed Oil',
-    price: 850,
-    unit: '30 ml',
-    image: 'https://images.unsplash.com/photo-1608248597359-00984a9191d9?w=400&q=80',
-    deliveryTime: '3 hrs',
-    categorySlug: 'beauty-makeup',
-    inStock: true,
-  },
-  {
-    id: 'dilmah-1',
-    name: 'Dilmah Green Tea with Camomile Flowers',
-    price: 630,
-    unit: '20 pcs',
-    image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=400&q=80',
-    deliveryTime: '3 hrs',
-    categorySlug: 'food',
-    inStock: true,
-  },
-];
+import { fetchUserProfileFromBackend, fetchAddressesFromBackend, placeOrderOnBackend, fetchProductsFromBackend } from '@/lib/api';
 
 const DELIVERY_SLOTS = [
   { id: 'slot-1', time: 'Today 8 AM - 9 AM', status: 'Available' },
@@ -94,6 +50,9 @@ export default function CheckoutPage() {
   const isBN = language === 'BN';
   const t = TRANSLATIONS[language];
 
+  // All catalog products for dynamic recommendations
+  const [allProducts, setAllProducts] = useState<Product[]>(CHALDAL_PRODUCTS);
+
   // User Profile Contact Info State
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -111,6 +70,75 @@ export default function CheckoutPage() {
 
   const SHIPPING_FEE = totalPrice >= 1000 || totalPrice === 0 ? 0 : 49;
   const finalTotal = totalPrice + SHIPPING_FEE;
+
+  // Fetch backend products to merge into catalog for category recommendations
+  useEffect(() => {
+    async function loadCatalog() {
+      try {
+        const backendProds = await fetchProductsFromBackend();
+        if (Array.isArray(backendProds) && backendProds.length > 0) {
+          const combined = [...backendProds, ...CHALDAL_PRODUCTS];
+          const unique = Array.from(new Map(combined.map((p) => [p.id, p])).values());
+          setAllProducts(unique);
+        }
+      } catch (err) {
+        console.error('Error fetching catalog for checkout recommendations:', err);
+      }
+    }
+    loadCatalog();
+  }, []);
+
+  // --- Dynamic Related Products matching user's cart categories/sub-categories ---
+  const cartProductIds = new Set(cartItems.map((item) => String(item.id)));
+
+  // Extract category slugs and names from items in cart
+  const cartCategorySlugs = Array.from(
+    new Set(
+      cartItems
+        .map((item) => {
+          if ((item as any).categorySlug) return String((item as any).categorySlug).toLowerCase();
+          if (item.category) return String(item.category).toLowerCase();
+          const matchedProd = allProducts.find((p) => String(p.id) === String(item.id));
+          if (matchedProd) {
+            return (matchedProd.categorySlug || matchedProd.category || '').toLowerCase();
+          }
+          return '';
+        })
+        .filter(Boolean)
+    )
+  );
+
+  // Filter products that belong to the exact same categories/sub-categories as items in the cart
+  const categoryMatchedProducts = allProducts.filter((prod) => {
+    if (cartProductIds.has(String(prod.id))) return false;
+    if (cartCategorySlugs.length === 0) return true;
+
+    const prodCatSlug = (prod.categorySlug || '').toLowerCase();
+    const prodCatName = (prod.category || '').toLowerCase();
+
+    return cartCategorySlugs.some((cartCat) => {
+      if (!cartCat) return false;
+      return (
+        prodCatSlug.includes(cartCat) ||
+        cartCat.includes(prodCatSlug) ||
+        prodCatName.includes(cartCat) ||
+        cartCat.includes(prodCatName)
+      );
+    });
+  });
+
+  // Fallback if fewer than 4 matches found
+  const fallbackProducts = allProducts.filter(
+    (p) => !cartProductIds.has(String(p.id))
+  );
+
+  const relatedProducts = (
+    categoryMatchedProducts.length >= 4
+      ? categoryMatchedProducts
+      : [...categoryMatchedProducts, ...fallbackProducts]
+  )
+    .filter((p, index, self) => self.findIndex((x) => x.id === p.id) === index)
+    .slice(0, 4);
 
   // 1. Fetch User Profile & Backend Addresses on Mount
   useEffect(() => {
@@ -515,23 +543,30 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* 5. Section: Need Anything Else? (Upsell) */}
+      {/* 5. Section: Need Anything Else? (Category & Sub-Category Related Recommendations) */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3.5">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-zinc-900 flex items-center gap-1.5">
-              <span>Need Anything Else?</span>
+              <span>{isBN ? 'আপনার আর কিছু লাগবে?' : 'Need Anything Else?'}</span>
               <Sparkles className="w-4 h-4 text-amber-500" />
             </h2>
             <p className="text-xs text-zinc-500 mt-0.5">
-              Add frequently forgotten daily essentials before checkout
+              {isBN
+                ? 'আপনার কার্টে যুক্ত ক্যাটাগরি ও সাব-ক্যাটাগরির সম্পর্কিত অন্যান্য সেরা নিত্যপ্রয়োজনীয় পণ্যসমূহ:'
+                : 'Related essential items based on categories in your cart:'}
             </p>
           </div>
+          {cartCategorySlugs.length > 0 && (
+            <span className="text-[11px] font-bold text-[#7533CB] bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-full hidden sm:inline">
+              {isBN ? 'ক্যাটাগরি ম্যাচিং' : 'Category Matched'}
+            </span>
+          )}
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {UPSELL_PRODUCTS.map((prod) => (
-            <ProductCard key={prod.id} product={prod} categoryName="Upsell" />
+          {relatedProducts.map((prod) => (
+            <ProductCard key={prod.id} product={prod} categoryName="Related" />
           ))}
         </div>
       </div>

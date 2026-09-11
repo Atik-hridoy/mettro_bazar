@@ -138,14 +138,8 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Center: Search Bar (Shows on desktop or when scrolled) */}
-          <div
-            className={`flex-1 max-w-xl transition-all duration-200 ${
-              isScrolled || searchQuery
-                ? 'opacity-100 scale-100 pointer-events-auto'
-                : 'opacity-0 scale-95 pointer-events-none hidden md:block'
-            }`}
-          >
+          {/* Center: Search Bar (Stable positioning without scroll layout shifts) */}
+          <div className="flex-1 max-w-xl min-w-0">
             <div className="relative w-full">
               <input
                 type="text"
