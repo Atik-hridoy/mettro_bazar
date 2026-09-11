@@ -5,14 +5,24 @@ export const getApiBaseUrl = (): string => {
   if (typeof window !== 'undefined') {
     const customApi = localStorage.getItem('mb_api_url');
     if (customApi) return customApi;
+
+    const host = window.location.hostname;
+    // 1. If running on localhost or local IP -> ALWAYS use local Docker Django backend
+    if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.')) {
+      return 'http://127.0.0.1:8000/api';
+    }
+
+    // 2. If browsing live on metrobazar.online -> use production API
+    if (host.includes('metrobazar.online')) {
+      return 'https://api.metrobazar.online/api';
+    }
   }
   
-  const envUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (envUrl && envUrl !== 'https://api.metrobazar.online/api') {
-    return envUrl;
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
   }
 
-  // Fallback to local Docker Django backend
+  // Default for Localhost / Dev Mode
   return 'http://127.0.0.1:8000/api';
 };
 

@@ -74,8 +74,8 @@ export default function CategoryPage() {
   const slugArray: string[] = Array.isArray(rawSlug)
     ? rawSlug
     : typeof rawSlug === 'string'
-    ? [rawSlug]
-    : [];
+      ? [rawSlug]
+      : [];
 
   let { target, breadcrumbs } = findCategoryPath(categoriesTree, slugArray);
 
