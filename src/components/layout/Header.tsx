@@ -275,7 +275,7 @@ export const Header: React.FC<HeaderProps> = ({
                       </Link>
 
                       <Link
-                        href="/profile"
+                        href="/orders"
                         onClick={() => setIsUserMenuOpen(false)}
                         className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-purple-50/60 hover:text-[#7533CB] border-b border-zinc-100 transition-colors text-left font-normal cursor-pointer block"
                       >

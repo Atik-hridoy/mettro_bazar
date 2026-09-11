@@ -153,12 +153,16 @@ export const useCartStore = create<CartState>()(
           isGuest: !currentUser?.isLoggedIn,
         });
 
-        // Ensure backend sync recovery: if local cart is empty but server has saved items, restore them
-        try {
-          const serverCart = await fetchGuestCartFromBackend(guestId);
-          if (serverCart && Array.isArray(serverCart.items) && serverCart.items.length > 0) {
-            const currentItems = get().cartItems;
-            if (currentItems.length === 0) {
+        const currentItems = get().cartItems;
+        const userInfo = currentUser?.isLoggedIn ? { email: currentUser.email, phone: currentUser.phone } : undefined;
+
+        if (currentItems.length > 0) {
+          syncGuestCartToBackend(guestId, currentItems, 'Dhaka', userInfo);
+        } else {
+          // Ensure backend sync recovery: if local cart is empty but server has saved items, restore them
+          try {
+            const serverCart = await fetchGuestCartFromBackend(guestId);
+            if (serverCart && Array.isArray(serverCart.items) && serverCart.items.length > 0) {
               const restoredItems: CartItem[] = serverCart.items.map((item: any) => ({
                 id: item.product_id || item.id,
                 name: item.product_name,
@@ -174,9 +178,9 @@ export const useCartStore = create<CartState>()(
                 totalItems,
               });
             }
+          } catch (err) {
+            console.error('Failed to sync guest session with server:', err);
           }
-        } catch (err) {
-          console.error('Failed to sync guest session with server:', err);
         }
       },
 
@@ -207,7 +211,8 @@ export const useCartStore = create<CartState>()(
 
           const { totalPrice, totalItems } = calculateTotals(updatedItems);
           if (state.guestId) {
-            syncGuestCartToBackend(state.guestId, updatedItems);
+            const userInfo = state.user?.isLoggedIn ? { email: state.user.email, phone: state.user.phone } : undefined;
+            syncGuestCartToBackend(state.guestId, updatedItems, 'Dhaka', userInfo);
           }
           return {
             cartItems: updatedItems,
@@ -232,7 +237,8 @@ export const useCartStore = create<CartState>()(
 
           const { totalPrice, totalItems } = calculateTotals(updatedItems);
           if (state.guestId) {
-            syncGuestCartToBackend(state.guestId, updatedItems);
+            const userInfo = state.user?.isLoggedIn ? { email: state.user.email, phone: state.user.phone } : undefined;
+            syncGuestCartToBackend(state.guestId, updatedItems, 'Dhaka', userInfo);
           }
           return {
             cartItems: updatedItems,
@@ -246,7 +252,8 @@ export const useCartStore = create<CartState>()(
           const updatedItems = state.cartItems.filter((item) => item.id !== id);
           const { totalPrice, totalItems } = calculateTotals(updatedItems);
           if (state.guestId) {
-            syncGuestCartToBackend(state.guestId, updatedItems);
+            const userInfo = state.user?.isLoggedIn ? { email: state.user.email, phone: state.user.phone } : undefined;
+            syncGuestCartToBackend(state.guestId, updatedItems, 'Dhaka', userInfo);
           }
           return {
             cartItems: updatedItems,
@@ -258,7 +265,8 @@ export const useCartStore = create<CartState>()(
       clearCart: () =>
         set((state) => {
           if (state.guestId) {
-            syncGuestCartToBackend(state.guestId, []);
+            const userInfo = state.user?.isLoggedIn ? { email: state.user.email, phone: state.user.phone } : undefined;
+            syncGuestCartToBackend(state.guestId, [], 'Dhaka', userInfo);
           }
           return {
             cartItems: [],
@@ -301,6 +309,11 @@ export const useCartStore = create<CartState>()(
           const isEmail = identity && identity.includes('@');
           const phoneVal = extraData?.phone || (!isEmail ? identity : '');
           const emailVal = extraData?.email || (isEmail ? identity : '');
+
+          const userInfo = { email: emailVal, phone: phoneVal };
+          if (state.cartItems.length > 0) {
+            syncGuestCartToBackend(freshGuestId, state.cartItems, 'Dhaka', userInfo);
+          }
 
           return {
             isGuest: false,

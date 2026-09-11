@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   MapPin,
@@ -12,11 +12,20 @@ import {
   ShieldCheck,
   Truck,
   Sparkles,
+  User as UserIcon,
+  Phone,
+  Mail,
+  CreditCard,
+  Banknote,
+  ShoppingBag,
+  Edit2,
 } from 'lucide-react';
 import { useCartStore, Address } from '@/store/useCartStore';
 import { ProductCard } from '@/components/common/ProductCard';
 import { AddressModal } from '@/components/common/AddressModal';
 import { Product } from '@/lib/constants';
+import { TRANSLATIONS } from '@/lib/translations';
+import { fetchUserProfileFromBackend, fetchAddressesFromBackend, placeOrderOnBackend } from '@/lib/api';
 
 // 4 Upsell Items under "Need Anything Else?" matching Screenshot
 const UPSELL_PRODUCTS: Product[] = [
@@ -76,73 +85,369 @@ export default function CheckoutPage() {
     selectedAddress,
     savedAddresses,
     setSelectedAddress,
+    addAddress,
     clearCart,
+    user,
+    language,
   } = useCartStore();
 
+  const isBN = language === 'BN';
+  const t = TRANSLATIONS[language];
+
+  // User Profile Contact Info State
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+
+  // Address & Checkout State
+  const [backendAddresses, setBackendAddresses] = useState<Address[]>([]);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<string>('slot-2');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'bkash'>('cod');
   const [isOrderComplete, setIsOrderComplete] = useState(false);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const SHIPPING_FEE = totalPrice >= 1000 || totalPrice === 0 ? 0 : 49;
   const finalTotal = totalPrice + SHIPPING_FEE;
 
-  const handleProceed = () => {
-    if (!selectedAddress && savedAddresses.length === 0) {
+  // 1. Fetch User Profile & Backend Addresses on Mount
+  useEffect(() => {
+    async function loadUserData() {
+      try {
+        const profile = await fetchUserProfileFromBackend();
+        if (profile) {
+          const fn = profile.first_name || '';
+          const ln = profile.last_name || '';
+          const full = `${fn} ${ln}`.trim() || 'Valued Customer';
+          setCustomerName(full);
+
+          const rawPhone = profile.phone_number || '';
+          const validPhone = rawPhone && !rawPhone.includes('@') ? rawPhone : '';
+          setCustomerPhone(validPhone);
+          setCustomerEmail(profile.email || '');
+
+          if (!validPhone) {
+            setIsEditingContact(true);
+          }
+        } else if (user) {
+          setCustomerName(user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Valued Customer');
+          const rawPhone = user.phone || '';
+          const validPhone = rawPhone && !rawPhone.includes('@') ? rawPhone : '';
+          setCustomerPhone(validPhone);
+          setCustomerEmail(user.email || '');
+
+          if (!validPhone) {
+            setIsEditingContact(true);
+          }
+        }
+
+        const addresses = await fetchAddressesFromBackend();
+        if (Array.isArray(addresses) && addresses.length > 0) {
+          const mapped: Address[] = addresses.map((a: any) => ({
+            id: String(a.id),
+            label: a.title || 'Home',
+            details: `${a.street_address}${a.area ? `, ${a.area}` : ''}${a.city ? `, ${a.city}` : ''}`,
+            city: a.city || 'Dhaka',
+            phone: customerPhone || '01333410106',
+          }));
+          setBackendAddresses(mapped);
+
+          // Select first default address if none selected
+          if (!selectedAddress && mapped.length > 0) {
+            setSelectedAddress(mapped[0]);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load checkout user data:', err);
+      }
+    }
+    loadUserData();
+  }, []);
+
+  const allAddresses = backendAddresses.length > 0 ? backendAddresses : savedAddresses;
+  const activeAddress = selectedAddress || (allAddresses.length > 0 ? allAddresses[0] : null);
+
+  const handleModalClose = async () => {
+    setIsAddressModalOpen(false);
+    // Reload addresses from backend
+    try {
+      const addresses = await fetchAddressesFromBackend();
+      if (Array.isArray(addresses) && addresses.length > 0) {
+        const mapped: Address[] = addresses.map((a: any) => ({
+          id: String(a.id),
+          label: a.title || 'Home',
+          details: `${a.street_address}${a.area ? `, ${a.area}` : ''}${a.city ? `, ${a.city}` : ''}`,
+          city: a.city || 'Dhaka',
+          phone: customerPhone || '01333410106',
+        }));
+        setBackendAddresses(mapped);
+        if (mapped.length > 0) setSelectedAddress(mapped[mapped.length - 1]);
+      }
+    } catch (err) {
+      console.error('Error refreshing addresses:', err);
+    }
+  };
+
+  const [createdOrderNumber, setCreatedOrderNumber] = useState<string>('');
+  const [confirmedOrderTotal, setConfirmedOrderTotal] = useState<number>(0);
+
+  const handleProceed = async () => {
+    setPhoneError('');
+    const cleanPhone = customerPhone.trim();
+
+    // Check if phone number is empty, contains '@', or invalid
+    if (!cleanPhone || cleanPhone.includes('@') || cleanPhone.length < 9) {
+      setPhoneError(
+        isBN
+          ? '⚠️ চেকআউট সম্পন্ন করার জন্য একটি সক্রিয় ফোন নম্বর প্রদান করা আবশ্যক! দয়া করে নিচে ফোন নম্বরটি পূরণ করুন।'
+          : '⚠️ A valid contact phone number is required to proceed with checkout! Please enter your phone number below.'
+      );
+      setIsEditingContact(true);
+      return;
+    }
+
+    if (!activeAddress && allAddresses.length === 0) {
       setIsAddressModalOpen(true);
       return;
     }
-    setIsOrderComplete(true);
-    setTimeout(() => {
+
+    setIsPlacingOrder(true);
+    try {
+      const currentOrderTotal = finalTotal;
+      const orderPayload = {
+        customer_name: customerName || 'Customer',
+        customer_phone: cleanPhone,
+        customer_email: user?.email || '',
+        delivery_address: {
+          recipient_name: customerName || 'Customer',
+          recipient_phone: cleanPhone,
+          street_address: activeAddress?.details || 'Delivery Address',
+          area: activeAddress?.city || 'Rangpur',
+          city: activeAddress?.city || 'Rangpur',
+        },
+        items: cartItems.map((item) => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          unit: item.unit,
+          subtotal: item.price * item.quantity,
+        })),
+        subtotal: totalPrice,
+        delivery_fee: SHIPPING_FEE,
+        total_amount: currentOrderTotal,
+        note: '',
+      };
+
+      const res = await placeOrderOnBackend(orderPayload);
+      const orderNum = res?.order_number || res?.order?.order_number || `ORD-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+      const totalPaid = Number(res?.order?.total_amount) || currentOrderTotal;
+      setCreatedOrderNumber(orderNum);
+      setConfirmedOrderTotal(totalPaid);
+      setIsOrderComplete(true);
       clearCart();
-    }, 4000);
+    } catch (err: any) {
+      console.error('Order placement failed:', err);
+      alert(err.message || 'Failed to place order. Please try again.');
+    } finally {
+      setIsPlacingOrder(false);
+    }
   };
 
   if (isOrderComplete) {
     return (
-      <div className="w-full min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4 animate-bounce">
-          <CheckCircle2 className="w-10 h-10" />
+      <div className="w-full min-h-[75vh] flex flex-col items-center justify-center p-6 text-center select-none animate-in fade-in zoom-in-95 duration-200">
+        <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-5 animate-bounce shadow-md">
+          <CheckCircle2 className="w-12 h-12" />
         </div>
-        <h2 className="text-2xl font-bold text-zinc-900 mb-2">Order Confirmed!</h2>
-        <p className="text-sm text-zinc-600 max-w-md mb-6">
-          Thank you for shopping with <strong>METRO BAZAR</strong>. Your groceries are being carefully packed and will be delivered to your address on schedule.
+        <h2 className="text-2xl sm:text-3xl font-black text-zinc-900 mb-2">
+          {isBN ? 'অর্ডার সফলভাবে সম্পন্ন হয়েছে!' : 'Order Confirmed!'}
+        </h2>
+        <p className="text-sm text-zinc-600 max-w-md mb-6 leading-relaxed">
+          {isBN
+            ? `ধন্যবাদ ${customerName || ''}! মেট্রো বাজার থেকে আপনার কেনাকাটার অর্ডারটি নেওয়া হয়েছে। দ্রুততম সময়ে আপনার ঠিকানায় ডেলিভারি দেওয়া হবে।`
+            : `Thank you ${customerName || ''}! Your order has been placed successfully with METRO BAZAR. Our team is preparing your items for delivery.`}
         </p>
+
+        <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4 mb-6 max-w-md w-full text-left text-xs space-y-2">
+          {createdOrderNumber && (
+            <div className="flex justify-between text-zinc-600 pb-2 border-b border-zinc-200 font-bold">
+              <span>{isBN ? 'অর্ডার নম্বর:' : 'Order Number:'}</span>
+              <strong className="text-emerald-600 font-mono text-sm">{createdOrderNumber}</strong>
+            </div>
+          )}
+          <div className="flex justify-between text-zinc-600">
+            <span>{isBN ? 'গ্রাহকের নাম:' : 'Customer Name:'}</span>
+            <strong className="text-zinc-900">{customerName || 'Customer'}</strong>
+          </div>
+          {customerPhone && (
+            <div className="flex justify-between text-zinc-600">
+              <span>{isBN ? 'ফোন নম্বর:' : 'Phone Number:'}</span>
+              <strong className="text-zinc-900">{customerPhone}</strong>
+            </div>
+          )}
+          {activeAddress && (
+            <div className="flex justify-between text-zinc-600">
+              <span>{isBN ? 'ডেলিভারি ঠিকানা:' : 'Delivery Address:'}</span>
+              <strong className="text-zinc-900 truncate max-w-[200px]">{activeAddress.details}</strong>
+            </div>
+          )}
+          <div className="flex justify-between text-zinc-600 pt-2 border-t border-zinc-200 font-bold text-sm">
+            <span>{isBN ? 'মোট প্রদেয় মূল্য:' : 'Total Payable:'}</span>
+            <strong className="text-[#7533CB]">৳{confirmedOrderTotal}</strong>
+          </div>
+        </div>
+
         <Link
           href="/"
-          className="px-6 py-2.5 bg-[#7533CB] hover:bg-[#632AAD] text-white font-bold text-xs uppercase tracking-wider rounded transition-colors"
+          className="px-8 py-3 bg-[#7533CB] hover:bg-[#632AAD] text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-md transition-all cursor-pointer"
         >
-          Continue Shopping
+          {isBN ? 'আরও কেনাকাটা করুন' : 'Continue Shopping'}
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 pb-28">
-      {/* 1. Section: Select a Delivery Address */}
-      <div className="bg-white border border-zinc-200 rounded-lg shadow-2xs overflow-hidden mb-6">
-        <div className="bg-zinc-50/80 px-4 py-3 border-b border-zinc-200 flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-[#7533CB]" />
-          <h2 className="text-xs font-bold text-zinc-800 uppercase tracking-wide">
-            Select a Delivery Address
-          </h2>
+    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 pb-32">
+      <h1 className="text-xl sm:text-2xl font-black text-zinc-900 tracking-tight mb-6">
+        {isBN ? 'চেকআউট ও ডেলিভারি' : 'Checkout & Delivery'}
+      </h1>
+
+      {/* 1. Section: User / Contact Information (Professional Profile Integration) */}
+      <div className="bg-white border border-zinc-200 rounded-xl shadow-2xs overflow-hidden mb-6">
+        <div className="bg-zinc-50/80 px-4 py-3 border-b border-zinc-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <UserIcon className="w-4 h-4 text-[#7533CB]" />
+            <h2 className="text-xs font-bold text-zinc-800 uppercase tracking-wide">
+              {isBN ? 'গ্রাহকের তথ্য (Customer Information)' : 'Customer Information'}
+            </h2>
+          </div>
+          <button
+            onClick={() => setIsEditingContact(!isEditingContact)}
+            className="text-xs font-semibold text-[#7533CB] hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            <Edit2 className="w-3.5 h-3.5" />
+            <span>{isEditingContact ? (isBN ? 'সংরক্ষণ' : 'Save') : (isBN ? 'এডিট করুন' : 'Edit')}</span>
+          </button>
         </div>
 
         <div className="p-4 sm:p-5">
-          {savedAddresses.length > 0 ? (
+          {phoneError && (
+            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs font-semibold flex items-center gap-2">
+              <span>{phoneError}</span>
+            </div>
+          )}
+
+          {isEditingContact ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-[11px] text-zinc-500 font-medium mb-1">
+                  {isBN ? 'পূর্ণ নাম' : 'Full Name'}
+                </label>
+                <input
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md text-xs focus:outline-none focus:border-[#7533CB]"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] text-zinc-500 font-medium mb-1">
+                  {isBN ? 'ফোন নম্বর' : 'Phone Number'} <span className="text-rose-500 font-bold">* ({isBN ? 'আবশ্যক' : 'Required'})</span>
+                </label>
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => {
+                    setCustomerPhone(e.target.value);
+                    if (e.target.value) setPhoneError('');
+                  }}
+                  placeholder="017XXXXXXXX"
+                  className={`w-full px-3 py-2 border rounded-md text-xs focus:outline-none ${
+                    phoneError || !customerPhone
+                      ? 'border-rose-400 bg-rose-50/40 focus:border-rose-500 font-bold text-rose-900'
+                      : 'border-zinc-300 focus:border-[#7533CB]'
+                  }`}
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] text-zinc-500 font-medium mb-1">
+                  {isBN ? 'ইমেইল অ্যাড্রেস' : 'Email Address'}
+                </label>
+                <input
+                  type="email"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  placeholder="example@mail.com"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md text-xs focus:outline-none focus:border-[#7533CB]"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-zinc-50 border border-zinc-200">
+                <UserIcon className="w-4 h-4 text-purple-600 shrink-0" />
+                <div className="min-w-0">
+                  <span className="text-[10px] text-zinc-400 block font-medium uppercase">{isBN ? 'নাম' : 'Name'}</span>
+                  <span className="font-bold text-zinc-900 truncate block">{customerName || 'Valued Customer'}</span>
+                </div>
+              </div>
+
+              <div className={`flex items-center gap-2.5 p-2.5 rounded-lg border ${
+                !customerPhone ? 'bg-rose-50/60 border-rose-300' : 'bg-zinc-50 border-zinc-200'
+              }`}>
+                <Phone className={`w-4 h-4 shrink-0 ${!customerPhone ? 'text-rose-600' : 'text-purple-600'}`} />
+                <div className="min-w-0">
+                  <span className="text-[10px] text-zinc-400 block font-medium uppercase">{isBN ? 'ফোন' : 'Phone'}</span>
+                  <span className={`font-bold truncate block ${!customerPhone ? 'text-rose-600 italic' : 'text-zinc-900'}`}>
+                    {customerPhone || (isBN ? 'ফোন নম্বর দিন (আবশ্যক)' : 'Click Edit to Add Phone')}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-zinc-50 border border-zinc-200">
+                <Mail className="w-4 h-4 text-purple-600 shrink-0" />
+                <div className="min-w-0">
+                  <span className="text-[10px] text-zinc-400 block font-medium uppercase">{isBN ? 'ইমেইল' : 'Email'}</span>
+                  <span className="font-bold text-zinc-900 truncate block">{customerEmail || 'Not set'}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 2. Section: Select a Delivery Address */}
+      <div className="bg-white border border-zinc-200 rounded-xl shadow-2xs overflow-hidden mb-6">
+        <div className="bg-zinc-50/80 px-4 py-3 border-b border-zinc-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-[#7533CB]" />
+            <h2 className="text-xs font-bold text-zinc-800 uppercase tracking-wide">
+              {isBN ? 'ডেলিভারি ঠিকানা নির্বাচন করুন' : 'SELECT A DELIVERY ADDRESS'}
+            </h2>
+          </div>
+          <span className="text-[11px] font-semibold text-zinc-500">
+            {allAddresses.length} {isBN ? 'টি সংরক্ষিত ঠিকানা' : 'Saved Addresses'}
+          </span>
+        </div>
+
+        <div className="p-4 sm:p-5">
+          {allAddresses.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-              {savedAddresses.map((addr) => {
-                const isSelected =
-                  selectedAddress?.id === addr.id ||
-                  (!selectedAddress && addr.id === savedAddresses[0].id);
+              {allAddresses.map((addr) => {
+                const isSelected = activeAddress?.id === addr.id;
 
                 return (
                   <div
                     key={addr.id}
                     onClick={() => setSelectedAddress(addr)}
-                    className={`p-3.5 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                       isSelected
-                        ? 'border-[#7533CB] bg-purple-50/20 shadow-xs'
+                        ? 'border-[#7533CB] bg-purple-50/30 shadow-xs'
                         : 'border-zinc-200 hover:border-zinc-300 bg-white'
                     }`}
                   >
@@ -150,8 +455,8 @@ export default function CheckoutPage() {
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-xs font-bold text-zinc-900">{addr.label}</span>
                         {isSelected && (
-                          <span className="flex items-center gap-1 text-[11px] font-bold text-[#7533CB] bg-purple-100/60 px-2 py-0.5 rounded-full">
-                            <Check className="w-3 h-3" /> Selected
+                          <span className="flex items-center gap-1 text-[11px] font-bold text-[#7533CB] bg-purple-100/80 px-2 py-0.5 rounded-full">
+                            <Check className="w-3 h-3" /> {isBN ? 'নির্বাচিত' : 'Selected'}
                           </span>
                         )}
                       </div>
@@ -160,7 +465,7 @@ export default function CheckoutPage() {
                       </p>
                     </div>
                     <div className="text-[11px] text-zinc-400 mt-2 font-medium">
-                      Phone: {addr.phone}
+                      Phone: {addr.phone || customerPhone || '01333410106'}
                     </div>
                   </div>
                 );
@@ -168,62 +473,49 @@ export default function CheckoutPage() {
             </div>
           ) : null}
 
-          {/* Add New Address Button matching Chaldal */}
+          {/* Add New Address Button matching Chaldal 1:1 */}
           <button
             onClick={() => setIsAddressModalOpen(true)}
-            className="w-full py-3 border border-zinc-300 hover:border-[#7533CB] hover:bg-purple-50/20 rounded-md text-zinc-700 hover:text-[#7533CB] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            className="w-full py-3.5 border-2 border-dashed border-zinc-300 hover:border-[#7533CB] hover:bg-purple-50/30 rounded-xl text-zinc-700 hover:text-[#7533CB] text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
-            <span>New Address</span>
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>{isBN ? '+ নতুন ঠিকানা যুক্ত করুন' : '+ New Address'}</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Section: Preferred Delivery Time */}
-      <div className="bg-white border border-zinc-200 rounded-lg shadow-2xs overflow-hidden mb-8">
+      {/* 3. Section: Payment Method Selection */}
+      <div className="bg-white border border-zinc-200 rounded-xl shadow-2xs overflow-hidden mb-8">
         <div className="bg-zinc-50/80 px-4 py-3 border-b border-zinc-200 flex items-center gap-2">
-          <Clock className="w-4 h-4 text-[#7533CB]" />
+          <Banknote className="w-4 h-4 text-[#7533CB]" />
           <h2 className="text-xs font-bold text-zinc-800 uppercase tracking-wide">
-            Preferred Delivery Time
+            {isBN ? 'পেমেন্ট পদ্ধতি (Payment Method)' : 'Payment Method'}
           </h2>
         </div>
 
         <div className="p-4 sm:p-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
-            {DELIVERY_SLOTS.map((slot) => {
-              const isSelected = selectedSlot === slot.id;
-
-              return (
-                <button
-                  key={slot.id}
-                  onClick={() => setSelectedSlot(slot.id)}
-                  className={`p-3 rounded-lg border-2 text-left transition-all relative ${
-                    isSelected
-                      ? 'border-[#7533CB] bg-purple-50/30 shadow-xs'
-                      : 'border-zinc-200 hover:border-zinc-300 bg-white'
-                  }`}
-                >
-                  {slot.isRecommended && (
-                    <span className="absolute -top-2.5 right-2 bg-amber-500 text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded tracking-wider shadow-2xs">
-                      Fastest
-                    </span>
-                  )}
-                  <div className="text-xs font-bold text-zinc-900 mb-1">{slot.time}</div>
-                  <div
-                    className={`text-[11px] font-semibold ${
-                      isSelected ? 'text-[#7533CB]' : 'text-emerald-600'
-                    }`}
-                  >
-                    {slot.status}
-                  </div>
-                </button>
-              );
-            })}
+          <div className="max-w-md">
+            <div className="p-4 rounded-xl border-2 border-[#7533CB] bg-purple-50/30 shadow-xs flex items-start gap-3 select-none">
+              <Banknote className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-zinc-900 block">
+                    {isBN ? 'ক্যাশ অন ডেলিভারি (Cash on Delivery)' : 'Cash on Delivery'}
+                  </span>
+                  <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                    {isBN ? 'সক্রিয়' : 'Active'}
+                  </span>
+                </div>
+                <span className="text-[11px] text-zinc-500 block mt-1 leading-relaxed">
+                  {isBN ? 'পণ্য হাতে পেয়ে দেখে শুনে নগদ মূল্য পরিশোধ করুন।' : 'Pay with cash upon receiving your order at your doorstep.'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Section: Need Anything Else? */}
+      {/* 5. Section: Need Anything Else? (Upsell) */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3.5">
           <div>
@@ -244,19 +536,19 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* 4. Bottom Sticky Proceed Bar matching Chaldal */}
+      {/* 6. Bottom Sticky Proceed Bar matching Chaldal 1:1 */}
       <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-zinc-200 p-3.5 sm:px-8 shadow-lg">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
-              <span className="text-[11px] text-zinc-500 font-medium">Total Payable</span>
+              <span className="text-[11px] text-zinc-500 font-medium">{isBN ? 'সর্বমোট প্রদেয়' : 'Total Payable'}</span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-xl sm:text-2xl font-black text-zinc-900">
                   ৳{finalTotal}
                 </span>
                 {SHIPPING_FEE === 0 ? (
                   <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                    Free Delivery
+                    {isBN ? 'ফ্রি ডেলিভারি' : 'Free Delivery'}
                   </span>
                 ) : (
                   <span className="text-[11px] text-zinc-500">+৳49 delivery</span>
@@ -267,18 +559,19 @@ export default function CheckoutPage() {
 
           <button
             onClick={handleProceed}
-            className="flex-1 sm:flex-initial sm:min-w-[260px] py-3 px-6 bg-[#7533CB] hover:bg-[#632AAD] text-white font-bold text-sm rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+            disabled={isPlacingOrder}
+            className="flex-1 sm:flex-initial sm:min-w-[260px] py-3.5 px-6 bg-[#7533CB] hover:bg-[#632AAD] text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            <span>Proceed to Payment</span>
+            <span>{isPlacingOrder ? (isBN ? 'অর্ডার প্রসেস হচ্ছে...' : 'Processing Order...') : (isBN ? 'অর্ডার সম্পন্ন করুন' : 'Proceed to Order')}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* 5. 1:1 Authentic Add New Address Modal with Map & Pin */}
+      {/* 7. Authentic Add New Address Modal */}
       <AddressModal
         isOpen={isAddressModalOpen}
-        onClose={() => setIsAddressModalOpen(false)}
+        onClose={handleModalClose}
       />
     </div>
   );

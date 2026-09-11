@@ -205,7 +205,12 @@ export async function fetchProductsFromBackend(): Promise<Product[]> {
   }
 }
 
-export async function syncGuestCartToBackend(guestId: string, cartItems: any[], city: string = 'Dhaka') {
+export async function syncGuestCartToBackend(
+  guestId: string,
+  cartItems: any[],
+  city: string = 'Dhaka',
+  userInfo?: { email?: string; phone?: string }
+) {
   try {
     const deviceInfo = getClientDeviceInfo();
     await loggedFetch(`${API_BASE_URL}/cart/guest-sync/`, {
@@ -217,6 +222,8 @@ export async function syncGuestCartToBackend(guestId: string, cartItems: any[], 
         browser: deviceInfo.browser,
         os: deviceInfo.os,
         device_info: deviceInfo.device_info,
+        user_email: userInfo?.email || undefined,
+        user_phone: userInfo?.phone || undefined,
         cart_items: cartItems.map((item) => ({
           id: item.id,
           name: item.name,
@@ -390,7 +397,11 @@ export async function updateUserProfileOnBackend(payload: {
     });
     const data = await res.json();
     if (!res.ok) {
-      throw new Error(data.detail || data.error || JSON.stringify(data));
+      let errorMsg = 'Failed to update profile.';
+      if (typeof data.detail === 'string') errorMsg = data.detail;
+      else if (typeof data.error === 'string') errorMsg = data.error;
+      else if (typeof data === 'object') errorMsg = JSON.stringify(data);
+      throw new Error(errorMsg);
     }
     return data;
   } catch (err: any) {
@@ -477,6 +488,63 @@ export async function deleteAddressFromBackend(id: number | string) {
     console.error('Delete address error:', err);
     return false;
   }
+}
+
+export async function placeOrderOnBackend(payload: {
+  customer_name: string;
+  customer_phone: string;
+  customer_email?: string;
+  delivery_address: {
+    recipient_name: string;
+    recipient_phone: string;
+    street_address: string;
+    area: string;
+    city: string;
+  };
+  items: any[];
+  subtotal: number;
+  delivery_fee: number;
+  discount_amount?: number;
+  total_amount: number;
+  note?: string;
+}) {
+  try {
+    const res = await loggedFetch(`${API_BASE_URL}/orders/place-order/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.detail || data.error || 'Failed to place order.');
+    }
+    return data;
+  } catch (err: any) {
+    console.error('Place order API error:', err);
+    throw err;
+  }
+}
+
+export async function fetchUserOrdersFromBackend(userPhone?: string, userEmail?: string) {
+  try {
+    let queryStr = '';
+    if (userPhone && !userPhone.includes('@')) {
+      queryStr = `?phone=${encodeURIComponent(userPhone)}`;
+    } else if (userEmail && userEmail.includes('@')) {
+      queryStr = `?email=${encodeURIComponent(userEmail)}`;
+    }
+
+    const res = await loggedFetch(`${API_BASE_URL}/orders/${queryStr}`, {
+      cache: 'no-store',
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data) ? data : (Array.isArray(data?.results) ? data.results : []);
+    }
+  } catch (err) {
+    console.error('Fetch user orders error:', err);
+  }
+  return [];
 }
 
 

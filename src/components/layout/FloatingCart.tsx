@@ -11,10 +11,12 @@ import {
   ChevronUp,
   ChevronDown,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/useCartStore';
 import { TRANSLATIONS } from '@/lib/translations';
 
 export const FloatingCart: React.FC = () => {
+  const router = useRouter();
   const {
     cartItems,
     totalPrice,
@@ -26,6 +28,8 @@ export const FloatingCart: React.FC = () => {
     setAuthModalOpen,
     addItem,
     removeItem,
+    user,
+    isGuest,
   } = useCartStore();
 
   const [isSpecialCodeOpen, setIsSpecialCodeOpen] = useState(false);
@@ -38,7 +42,15 @@ export const FloatingCart: React.FC = () => {
   const finalTotal = totalPrice + SHIPPING_FEE;
 
   const handleCheckout = () => {
-    setAuthModalOpen(true);
+    const token = typeof window !== 'undefined' ? localStorage.getItem('mb_access_token') : null;
+    const isLoggedIn = Boolean((user && user.isLoggedIn) || !isGuest || token);
+
+    setDrawerOpen(false);
+    if (isLoggedIn) {
+      router.push('/checkout');
+    } else {
+      setAuthModalOpen(true);
+    }
   };
 
   return (
