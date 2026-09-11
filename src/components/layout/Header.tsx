@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Menu,
   MapPin,
@@ -28,7 +29,8 @@ export const Header: React.FC<HeaderProps> = ({
   searchQuery = '',
   onSearchChange,
 }) => {
-  const { setAuthModalOpen, user, logoutUser, language, setLanguage } = useCartStore();
+  const router = useRouter();
+  const { setAuthModalOpen, user, logoutUser, language, setLanguage, guestId } = useCartStore();
   const [selectedCity, setSelectedCity] = useState('Dhaka');
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -257,7 +259,7 @@ export const Header: React.FC<HeaderProps> = ({
                       <UserIcon className="w-3.5 h-3.5" />
                     </div>
                     <span className="text-xs font-bold text-zinc-800 hidden sm:inline">
-                      {user.phone}
+                      {`${user.firstName || ''} ${user.lastName || ''}`.trim() || user.name || user.phone || user.email || 'Profile'}
                     </span>
                   </button>
 
@@ -307,6 +309,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onClick={() => {
                           logoutUser();
                           setIsUserMenuOpen(false);
+                          router.push('/');
                         }}
                         className="w-full px-4 py-2.5 text-xs sm:text-[13px] text-zinc-700 hover:bg-rose-50 hover:text-rose-600 transition-colors text-left font-normal cursor-pointer"
                       >
@@ -317,13 +320,22 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               </div>
             ) : (
-              /* Login Button matching Screenshot */
-              <button
-                onClick={() => setAuthModalOpen(true)}
-                className="px-4 sm:px-5 py-1.5 bg-[#7533CB] hover:bg-[#632AAD] text-white text-xs font-bold rounded shadow-xs transition-colors cursor-pointer"
-              >
-                {t.login}
-              </button>
+              /* Guest Badge & Login Button matching Screenshot */
+              <div className="flex items-center gap-2">
+                <span
+                  className="hidden md:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono bg-purple-100/80 text-[#7533CB] border border-purple-200"
+                  title={`Guest ID: ${guestId}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
+                  Guest #{guestId ? guestId.slice(-6) : 'ID'}
+                </span>
+                <button
+                  onClick={() => setAuthModalOpen(true)}
+                  className="px-4 sm:px-5 py-1.5 bg-[#7533CB] hover:bg-[#632AAD] text-white text-xs font-bold rounded shadow-xs transition-colors cursor-pointer"
+                >
+                  {t.login}
+                </button>
+              </div>
             )}
           </div>
         </div>

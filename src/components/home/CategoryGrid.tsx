@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { POPULAR_CATEGORIES_DATA, PopularCategory, BRAND_PARTNERS } from '@/lib/constants';
+import { ChevronLeft, ChevronRight, Folder } from 'lucide-react';
+import { BRAND_PARTNERS, CategoryItem } from '@/lib/constants';
+import { fetchCategoriesFromBackend } from '@/lib/api';
 
 interface CategoryGridProps {
   onSelectCategory?: (id: string) => void;
@@ -12,6 +13,21 @@ interface CategoryGridProps {
 export const CategoryGrid: React.FC<CategoryGridProps> = ({ onSelectCategory }) => {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCategories() {
+      const fetched = await fetchCategoriesFromBackend();
+      if (isMounted && fetched && fetched.length > 0) {
+        setCategories(fetched);
+      }
+    }
+    loadCategories();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -20,12 +36,11 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ onSelectCategory }) 
     }
   };
 
-  const handleCategoryClick = (cat: PopularCategory) => {
+  const handleCategoryClick = (cat: CategoryItem) => {
     if (onSelectCategory) {
       onSelectCategory(cat.id);
     }
-    // Navigate to food subcategory or direct category
-    router.push(`/category/food/${cat.slug}`);
+    router.push(`/category/${cat.slug}`);
   };
 
   return (
@@ -47,14 +62,14 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ onSelectCategory }) 
             <div className="flex gap-1 ml-1">
               <button
                 onClick={() => scroll('left')}
-                className="w-6 h-6 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center transition-colors"
+                className="w-6 h-6 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="Scroll Left"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => scroll('right')}
-                className="w-6 h-6 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center transition-colors"
+                className="w-6 h-6 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="Scroll Right"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -68,18 +83,22 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ onSelectCategory }) 
           ref={scrollRef}
           className="flex gap-3 overflow-x-auto no-scrollbar pb-2 pt-1 scroll-smooth"
         >
-          {POPULAR_CATEGORIES_DATA.map((cat: PopularCategory) => (
+          {categories.map((cat: CategoryItem) => (
             <div
               key={cat.id}
               onClick={() => handleCategoryClick(cat)}
               className="shrink-0 w-36 sm:w-40 bg-white border border-zinc-200 rounded-xl p-3 flex flex-col items-center justify-between hover:shadow-xs transition-shadow cursor-pointer group"
             >
-              <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center mb-2 overflow-hidden">
-                <img
-                  src={cat.image}
-                  alt={cat.name}
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                />
+              <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center mb-2 overflow-hidden bg-zinc-50 rounded-lg">
+                {cat.image ? (
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                  />
+                ) : (
+                  <Folder className="w-10 h-10 text-purple-400 opacity-60" />
+                )}
               </div>
 
               <span className="text-xs font-medium text-zinc-800 text-center line-clamp-2 leading-tight group-hover:text-[#7533CB] transition-colors">

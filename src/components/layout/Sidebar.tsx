@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -11,7 +11,8 @@ import {
   ChevronDown,
   X,
 } from 'lucide-react';
-import { CATEGORY_TREE, CategoryItem } from '@/lib/constants';
+import { CategoryItem } from '@/lib/constants';
+import { fetchCategoriesFromBackend } from '@/lib/api';
 import { useCartStore } from '@/store/useCartStore';
 import { TRANSLATIONS, CATEGORY_TRANSLATIONS } from '@/lib/translations';
 
@@ -29,9 +30,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { language } = useCartStore();
   const t = TRANSLATIONS[language];
 
+  // Dynamic Category Tree state (Fetched from Django backend API)
+  const [categoriesTree, setCategoriesTree] = useState<CategoryItem[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     food: true,
+    'grocery-rice': true,
+    'fruits-and-vegetables': true,
   });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadBackendCategories() {
+      const fetched = await fetchCategoriesFromBackend();
+      if (isMounted && fetched && fetched.length > 0) {
+        setCategoriesTree(fetched);
+
+        // Auto expand all top-level categories that have children
+        const initialExpandState: Record<string, boolean> = {};
+        fetched.forEach((cat) => {
+          if (cat.children && cat.children.length > 0) {
+            initialExpandState[cat.id] = true;
+          }
+        });
+        setExpandedCategories((prev) => ({ ...initialExpandState, ...prev }));
+      }
+    }
+
+    loadBackendCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const toggleExpand = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -64,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onClick={onClose}
       />
 
-      {/* Left Sidebar Navigation (Expanded Width w-64 with clear typography) */}
+      {/* Left Sidebar Navigation */}
       <aside
         className={`fixed left-0 top-14 bottom-0 w-64 bg-white border-r border-zinc-200 z-30 flex flex-col transition-transform duration-300 ease-in-out select-none ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -92,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* 1. Egg Club Banner (Authentic Tan/Gold) */}
+        {/* 1. Egg Club Banner */}
         <div className="p-3.5 bg-[#E5C384] text-zinc-900 border-b border-[#D4AE6E] shrink-0">
           <div className="flex items-center justify-between">
             <div>
@@ -138,9 +169,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </a>
         </div>
 
-        {/* 3. Hierarchical Category Tree */}
+        {/* 3. Hierarchical Category Tree (Fetched from Backend API) */}
         <nav className="flex-1 overflow-y-auto py-1.5 custom-scrollbar">
-          {CATEGORY_TREE.map((cat: CategoryItem) => {
+          {categoriesTree.map((cat: CategoryItem) => {
             const hasChildren = cat.children && cat.children.length > 0;
             const isExpanded = !!expandedCategories[cat.id];
             const catPath = `/category/${cat.slug}`;

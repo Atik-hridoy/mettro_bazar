@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { FloatingCart } from './FloatingCart';
 import { AuthModal } from '@/components/common/AuthModal';
 import { ProductDetailModal } from '@/components/common/ProductDetailModal';
+import { CookieConsentBanner } from '@/components/common/CookieConsentBanner';
+import { useCartStore } from '@/store/useCartStore';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -16,6 +18,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   // Always open by default on desktop, unless user explicitly closes it
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const initGuestSession = useCartStore((s) => s.initGuestSession);
+
+  useEffect(() => {
+    initGuestSession();
+  }, [initGuestSession]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col text-zinc-900 font-sans">
@@ -56,6 +63,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       {/* Global Product Detail & Recommendations Modal matching Chaldal 1:1 */}
       <ProductDetailModal />
+
+      {/* Global Cookie Consent & Device Tracking Banner */}
+      <CookieConsentBanner />
     </div>
   );
 };

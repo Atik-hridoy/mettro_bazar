@@ -219,13 +219,13 @@ export const ProductDetailModal: React.FC = () => {
                   ৳{selectedDetailProduct.price}
                 </span>
 
-                {selectedDetailProduct.originalPrice && (
+                {selectedDetailProduct.originalPrice && selectedDetailProduct.originalPrice > selectedDetailProduct.price && (
                   <span className="text-xs text-zinc-400 font-medium line-through">
                     MRP ৳{selectedDetailProduct.originalPrice}
                   </span>
                 )}
 
-                {discountPercent > 0 && (
+                {discountPercent > 0 && selectedDetailProduct.originalPrice && selectedDetailProduct.originalPrice > selectedDetailProduct.price && (
                   <span className="bg-[#7533CB] text-white text-[11px] font-bold px-2 py-0.5 rounded flex items-center gap-1 shadow-2xs">
                     <span>✦</span>
                     <span>{discountPercent}% OFF</span>

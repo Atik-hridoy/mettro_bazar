@@ -11,11 +11,11 @@ module.exports = {
     extend: {
       colors: {
         chaldal: {
-          purple: "#6A1B9A",
-          "purple-hover": "#571380",
-          "purple-light": "#F8F1FC",
-          "purple-dark": "#4A116D",
-          coral: "#FF5252",
+          purple: "var(--primary-color, #6A1B9A)",
+          "purple-hover": "var(--primary-hover, #571380)",
+          "purple-light": "var(--primary-light, #F8F1FC)",
+          "purple-dark": "var(--primary-dark, #4A116D)",
+          coral: "var(--accent-color, #FF5252)",
           "coral-hover": "#E04040",
           gold: "#FFC107",
           dark: "#222222",
@@ -25,13 +25,13 @@ module.exports = {
           border: "#E2E8F0",
         },
         primary: {
-          DEFAULT: "#6A1B9A",
-          hover: "#571380",
-          light: "#F8F1FC",
-          dark: "#4A116D",
+          DEFAULT: "var(--primary-color, #6A1B9A)",
+          hover: "var(--primary-hover, #571380)",
+          light: "var(--primary-light, #F8F1FC)",
+          dark: "var(--primary-dark, #4A116D)",
         },
         accent: {
-          coral: "#FF5252",
+          coral: "var(--accent-color, #FF5252)",
           gold: "#FFC107",
         },
       },

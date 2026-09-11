@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { ThemeSync } from '@/components/ThemeSync';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -26,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="antialiased font-sans bg-white text-zinc-900 selection:bg-zinc-100 selection:text-[#6A1B9A]">
+        <ThemeSync />
         <AppLayout>{children}</AppLayout>
       </body>
     </html>
