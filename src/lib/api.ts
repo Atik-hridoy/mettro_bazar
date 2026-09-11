@@ -1,11 +1,22 @@
-import { CategoryItem, Product } from './constants';
+import { CategoryItem, Product, CATEGORY_TREE, CHALDAL_PRODUCTS } from './constants';
 import { getClientDeviceInfo } from './deviceInfo';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== 'undefined' && window.location.hostname.includes('metrobazar.online')
-    ? 'https://api.metrobazar.online/api'
-    : 'http://127.0.0.1:8000/api');
+export const getApiBaseUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    const customApi = localStorage.getItem('mb_api_url');
+    if (customApi) return customApi;
+  }
+  
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (envUrl && envUrl !== 'https://api.metrobazar.online/api') {
+    return envUrl;
+  }
+
+  // Fallback to local Docker Django backend
+  return 'http://127.0.0.1:8000/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Custom Fetch Wrapper with Postman-style visual logger.
@@ -113,6 +124,11 @@ async function loggedFetch(url: string, options: RequestInit = {}): Promise<Resp
 }
 
 export async function fetchCategoriesFromBackend(): Promise<CategoryItem[]> {
+  const getFallbackCategories = (): CategoryItem[] => {
+    const foodRoot = CATEGORY_TREE.find((c) => c.slug === 'food');
+    return foodRoot?.children && foodRoot.children.length > 0 ? foodRoot.children : CATEGORY_TREE;
+  };
+
   try {
     const res = await loggedFetch(`${API_BASE_URL}/catalog/categories/`, {
       cache: 'no-store',
@@ -126,7 +142,7 @@ export async function fetchCategoriesFromBackend(): Promise<CategoryItem[]> {
     const rawCategories = Array.isArray(data) ? data : (Array.isArray(data?.results) ? data.results : []);
 
     if (rawCategories.length === 0) {
-      return [];
+      return getFallbackCategories();
     }
 
     const mapCategory = (item: any): CategoryItem => ({
@@ -150,8 +166,8 @@ export async function fetchCategoriesFromBackend(): Promise<CategoryItem[]> {
 
     return parsed;
   } catch (error) {
-    console.error('Backend category API error:', error);
-    return [];
+    console.warn('Backend category API unreachable, using fallback categories:', error);
+    return getFallbackCategories();
   }
 }
 
@@ -183,6 +199,10 @@ export async function fetchProductsFromBackend(): Promise<Product[]> {
     const data = await res.json();
     const rawProducts = Array.isArray(data) ? data : (Array.isArray(data?.results) ? data.results : []);
 
+    if (rawProducts.length === 0) {
+      return CHALDAL_PRODUCTS;
+    }
+
     return rawProducts.map((p: any) => {
       const price = Number(p.selling_price || p.base_price || 0);
       const basePrice = p.base_price ? Number(p.base_price) : 0;
@@ -204,8 +224,8 @@ export async function fetchProductsFromBackend(): Promise<Product[]> {
       };
     });
   } catch (error) {
-    console.error('Backend product API error:', error);
-    return [];
+    console.warn('Backend product API unreachable, using fallback products:', error);
+    return CHALDAL_PRODUCTS;
   }
 }
 

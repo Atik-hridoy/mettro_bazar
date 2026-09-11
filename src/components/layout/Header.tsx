@@ -56,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
     <>
       <header
         style={{ background: 'linear-gradient(90deg, #F5EFFC 0%, #E9DCF8 50%, #F5EFFC 100%)' }}
-        className="sticky top-0 z-40 w-full border-b border-[#DBC7F4] shadow-2xs backdrop-blur-md"
+        className="relative z-40 w-full border-b border-[#DBC7F4] shadow-2xs backdrop-blur-md"
       >
         <div className="flex items-center justify-between h-14 px-3.5 sm:px-4 md:px-6 gap-3 sm:gap-4">
           {/* Left: Hamburger, Site Logo & Location */}
