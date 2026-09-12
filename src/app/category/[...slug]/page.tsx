@@ -7,6 +7,7 @@ import { ChevronRight, PackageX } from 'lucide-react';
 import { CategoryItem, Product } from '@/lib/constants';
 import { fetchCategoriesFromBackend, fetchProductsFromBackend } from '@/lib/api';
 import { ProductCard } from '@/components/common/ProductCard';
+import { Pagination } from '@/components/common/Pagination';
 
 // Helper to find a category and its breadcrumb path from the tree
 function findCategoryPath(
@@ -51,6 +52,11 @@ export default function CategoryPage() {
   const [categoriesTree, setCategoriesTree] = useState<CategoryItem[]>([]);
   const [backendProducts, setBackendProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rawSlug]);
 
   useEffect(() => {
     let isMounted = true;
@@ -234,15 +240,27 @@ export default function CategoryPage() {
             <div className="text-xs text-zinc-500">Create products under this category from Admin Dashboard!</div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3 sm:gap-4">
-            {categoryProducts.map((prod: Product) => (
-              <ProductCard
-                key={prod.id}
-                product={prod}
-                categoryName={target?.name}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3 sm:gap-4">
+              {categoryProducts
+                .slice((currentPage - 1) * 14, currentPage * 14)
+                .map((prod: Product) => (
+                  <ProductCard
+                    key={prod.id}
+                    product={prod}
+                    categoryName={target?.name}
+                  />
+                ))}
+            </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(categoryProducts.length / 14)}
+              totalItems={categoryProducts.length}
+              itemsPerPage={14}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
       </div>
     </div>
