@@ -42,7 +42,7 @@ export const GuestBottomSection: React.FC = () => {
   return (
     <div className="w-full bg-white pb-20 select-none">
       {/* 1. Currently Delivering in Section matching Screenshot */}
-      <div className="relative pt-12 pb-24 overflow-hidden bg-linear-to-b from-white via-purple-50/20 to-amber-50/30">
+      <div className="relative pt-12 pb-16 overflow-hidden bg-white">
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight mb-8">
             Currently Delivering in
@@ -61,46 +61,15 @@ export const GuestBottomSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Skyline & Delivery Rider Illustration Graphic */}
-        <div className="w-full max-w-5xl mx-auto px-4 flex justify-center opacity-85 pointer-events-none">
-          <svg
-            viewBox="0 0 1000 320"
-            className="w-full h-auto max-h-64 object-contain"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Background skyline silhouette */}
-            <path
-              d="M0,280 L40,280 L40,160 L90,160 L90,280 L140,280 L140,120 L200,120 L200,280 L250,280 L250,180 L290,180 L290,280 L350,280 L350,90 L420,90 L420,280 L500,280 L500,140 L560,140 L560,280 L620,280 L620,110 L680,110 L680,280 L750,280 L750,150 L810,150 L810,280 L880,280 L880,130 L940,130 L940,280 L1000,280 L1000,320 L0,320 Z"
-              fill="#FDEED9"
+        {/* Metro Bazar Rangpur Delivery Rider Hero Graphic - Full Width (No Shadow, No Hover) */}
+        <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 pt-2">
+          <div className="relative w-full overflow-hidden">
+            <img
+              src="/delivery_rider.jpg"
+              alt="মেট্রোবাজার - আপনার পরিবারের দৈনন্দিন চাহিদা"
+              className="w-full h-auto object-contain"
             />
-            {/* Midground buildings */}
-            <path
-              d="M80,280 L120,280 L120,210 L160,210 L160,280 L300,280 L300,230 L340,230 L340,280 L600,280 L600,200 L650,200 L650,280 L780,280 L780,220 L840,220 L840,280 L960,280 L960,320 L0,320 Z"
-              fill="#F8DCBF"
-            />
-            {/* Ground line */}
-            <rect x="0" y="280" width="1000" height="40" fill="#F0C8A0" />
-
-            {/* Delivery Rider on Scooter Graphic */}
-            <g transform="translate(440, 150) scale(0.9)">
-              {/* Scooter body */}
-              <circle cx="50" cy="110" r="22" fill="#333" />
-              <circle cx="50" cy="110" r="12" fill="#fff" />
-              <circle cx="160" cy="110" r="22" fill="#333" />
-              <circle cx="160" cy="110" r="12" fill="#fff" />
-              <path d="M50,110 L90,110 L120,70 L160,110" stroke="#7533CB" strokeWidth="10" fill="none" strokeLinecap="round" />
-              <rect x="25" y="45" width="45" height="45" rx="6" fill="#F48FB1" />
-              <rect x="30" y="50" width="35" height="35" rx="4" fill="#EC407A" />
-
-              {/* Rider with helmet & groceries */}
-              <circle cx="120" cy="15" r="18" fill="#FFA726" />
-              <circle cx="120" cy="20" r="14" fill="#FFCC80" />
-              <path d="M105,38 C105,38 120,32 135,38 L140,75 L95,75 Z" fill="#FFE082" />
-              <path d="M125,45 L155,55" stroke="#FFE082" strokeWidth="8" strokeLinecap="round" />
-              {/* Handlebar */}
-              <path d="M150,45 L165,65" stroke="#333" strokeWidth="6" strokeLinecap="round" />
-            </g>
-          </svg>
+          </div>
         </div>
       </div>
 
