@@ -242,7 +242,7 @@ export async function fetchProductsFromBackend(): Promise<Product[]> {
 export async function syncGuestCartToBackend(
   guestId: string,
   cartItems: any[],
-  city: string = 'Dhaka',
+  city: string = 'Rangpur',
   userInfo?: { email?: string; phone?: string }
 ) {
   try {
@@ -476,7 +476,7 @@ export async function saveAddressToBackend(payload: {
     const url = isEdit ? `${API_BASE_URL}/accounts/addresses/${payload.id}/` : `${API_BASE_URL}/accounts/addresses/`;
     const method = isEdit ? 'PUT' : 'POST';
 
-    const cityVal = payload.city ? payload.city.trim() : 'Dhaka';
+    const cityVal = payload.city ? payload.city.trim() : 'Rangpur';
     const areaVal = payload.area ? payload.area.trim() : cityVal;
 
     const res = await loggedFetch(url, {

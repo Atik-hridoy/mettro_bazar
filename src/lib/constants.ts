@@ -545,11 +545,7 @@ export const BRAND_PARTNERS = [
 ];
 
 export const CITIES = [
-  'Dhaka',
-  'Chattogram',
-  'Sylhet',
-  'Jessore',
-  'Khulna',
+  'Rangpur',
 ];
 
 // Rich product catalog covering all categories & subcategories

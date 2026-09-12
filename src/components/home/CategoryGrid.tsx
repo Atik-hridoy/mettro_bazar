@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Folder } from 'lucide-react';
-import { BRAND_PARTNERS, CategoryItem } from '@/lib/constants';
+import { BRAND_PARTNERS, CategoryItem, CATEGORY_TREE } from '@/lib/constants';
 import { fetchCategoriesFromBackend } from '@/lib/api';
 
 interface CategoryGridProps {
@@ -13,7 +13,10 @@ interface CategoryGridProps {
 export const CategoryGrid: React.FC<CategoryGridProps> = ({ onSelectCategory }) => {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>(() => {
+    const foodRoot = CATEGORY_TREE.find((c) => c.slug === 'food');
+    return foodRoot?.children && foodRoot.children.length > 0 ? foodRoot.children : CATEGORY_TREE;
+  });
 
   useEffect(() => {
     let isMounted = true;

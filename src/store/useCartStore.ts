@@ -140,7 +140,7 @@ export const useCartStore = create<CartState>()(
           id: 'addr-1',
           label: 'Home',
           details: 'House 24, Road 5, Block B, Banani, Dhaka',
-          city: 'Dhaka',
+          city: 'Rangpur',
           phone: '01333410106',
         },
       ],
@@ -157,7 +157,7 @@ export const useCartStore = create<CartState>()(
         const userInfo = currentUser?.isLoggedIn ? { email: currentUser.email, phone: currentUser.phone } : undefined;
 
         if (currentItems.length > 0) {
-          syncGuestCartToBackend(guestId, currentItems, 'Dhaka', userInfo);
+          syncGuestCartToBackend(guestId, currentItems, 'Rangpur', userInfo);
         } else {
           // Ensure backend sync recovery: if local cart is empty but server has saved items, restore them
           try {
@@ -212,7 +212,7 @@ export const useCartStore = create<CartState>()(
           const { totalPrice, totalItems } = calculateTotals(updatedItems);
           if (state.guestId) {
             const userInfo = state.user?.isLoggedIn ? { email: state.user.email, phone: state.user.phone } : undefined;
-            syncGuestCartToBackend(state.guestId, updatedItems, 'Dhaka', userInfo);
+            syncGuestCartToBackend(state.guestId, updatedItems, 'Rangpur', userInfo);
           }
           return {
             cartItems: updatedItems,
@@ -238,7 +238,7 @@ export const useCartStore = create<CartState>()(
           const { totalPrice, totalItems } = calculateTotals(updatedItems);
           if (state.guestId) {
             const userInfo = state.user?.isLoggedIn ? { email: state.user.email, phone: state.user.phone } : undefined;
-            syncGuestCartToBackend(state.guestId, updatedItems, 'Dhaka', userInfo);
+            syncGuestCartToBackend(state.guestId, updatedItems, 'Rangpur', userInfo);
           }
           return {
             cartItems: updatedItems,
@@ -253,7 +253,7 @@ export const useCartStore = create<CartState>()(
           const { totalPrice, totalItems } = calculateTotals(updatedItems);
           if (state.guestId) {
             const userInfo = state.user?.isLoggedIn ? { email: state.user.email, phone: state.user.phone } : undefined;
-            syncGuestCartToBackend(state.guestId, updatedItems, 'Dhaka', userInfo);
+            syncGuestCartToBackend(state.guestId, updatedItems, 'Rangpur', userInfo);
           }
           return {
             cartItems: updatedItems,
@@ -266,7 +266,7 @@ export const useCartStore = create<CartState>()(
         set((state) => {
           if (state.guestId) {
             const userInfo = state.user?.isLoggedIn ? { email: state.user.email, phone: state.user.phone } : undefined;
-            syncGuestCartToBackend(state.guestId, [], 'Dhaka', userInfo);
+            syncGuestCartToBackend(state.guestId, [], 'Rangpur', userInfo);
           }
           return {
             cartItems: [],
@@ -312,7 +312,7 @@ export const useCartStore = create<CartState>()(
 
           const userInfo = { email: emailVal, phone: phoneVal };
           if (state.cartItems.length > 0) {
-            syncGuestCartToBackend(freshGuestId, state.cartItems, 'Dhaka', userInfo);
+            syncGuestCartToBackend(freshGuestId, state.cartItems, 'Rangpur', userInfo);
           }
 
           return {

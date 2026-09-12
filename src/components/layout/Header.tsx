@@ -31,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const router = useRouter();
   const { setAuthModalOpen, user, logoutUser, language, setLanguage, guestId } = useCartStore();
-  const [selectedCity, setSelectedCity] = useState('Dhaka');
+  const [selectedCity, setSelectedCity] = useState('Rangpur');
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -101,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="absolute left-0 mt-1.5 w-60 bg-white rounded-lg shadow-lg border border-zinc-200 py-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
                   <button
                     onClick={() => {
-                      setSelectedCity('Dhaka');
+                      setSelectedCity('Rangpur');
                       setIsLocationOpen(false);
                     }}
                     className="w-full px-3.5 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 flex items-center gap-2.5 transition-colors cursor-pointer"

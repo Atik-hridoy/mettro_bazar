@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, MapPin, Truck, HelpCircle } from 'lucide-react';
 
-const DELIVERY_CITIES = ['Dhaka', 'Chattogram', 'Jashore'];
+const DELIVERY_CITIES = ['Rangpur'];
 
 const FAQS = [
   {
@@ -20,7 +20,7 @@ const FAQS = [
   },
   {
     q: 'What are your delivery hours?',
-    a: 'We deliver from 8:00 AM to 10:00 PM every day across all serviceable areas in Dhaka, Chattogram, and Jashore.'
+    a: 'We deliver from 8:00 AM to 10:00 PM every day across all serviceable areas in Rangpur.'
   },
   {
     q: 'How do I pay?',
