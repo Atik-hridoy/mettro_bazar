@@ -134,11 +134,6 @@ async function loggedFetch(url: string, options: RequestInit = {}): Promise<Resp
 }
 
 export async function fetchCategoriesFromBackend(): Promise<CategoryItem[]> {
-  const getFallbackCategories = (): CategoryItem[] => {
-    const foodRoot = CATEGORY_TREE.find((c) => c.slug === 'food');
-    return foodRoot?.children && foodRoot.children.length > 0 ? foodRoot.children : CATEGORY_TREE;
-  };
-
   try {
     const res = await loggedFetch(`${API_BASE_URL}/catalog/categories/`, {
       cache: 'no-store',
@@ -152,32 +147,22 @@ export async function fetchCategoriesFromBackend(): Promise<CategoryItem[]> {
     const rawCategories = Array.isArray(data) ? data : (Array.isArray(data?.results) ? data.results : []);
 
     if (rawCategories.length === 0) {
-      return getFallbackCategories();
+      return [];
     }
 
     const mapCategory = (item: any): CategoryItem => ({
       id: String(item.id),
       name: item.name_en,
       slug: item.slug,
-      image: item.icon || item.banner || undefined,
+      image: item.image || item.banner || item.icon || undefined,
       hasChildren: Array.isArray(item.children) && item.children.length > 0,
       children: Array.isArray(item.children) ? item.children.map(mapCategory) : [],
     });
 
-    const parsed = rawCategories.map(mapCategory);
-
-    const foodRoot = parsed.find(
-      (c) => c.name.toLowerCase() === 'food' || c.slug === 'food'
-    );
-
-    if (foodRoot && foodRoot.children && foodRoot.children.length > 0) {
-      return foodRoot.children;
-    }
-
-    return parsed;
+    return rawCategories.map(mapCategory);
   } catch (error) {
-    console.warn('Backend category API unreachable, using fallback categories:', error);
-    return getFallbackCategories();
+    console.warn('Backend category API unreachable:', error);
+    return [];
   }
 }
 
@@ -210,7 +195,7 @@ export async function fetchProductsFromBackend(): Promise<Product[]> {
     const rawProducts = Array.isArray(data) ? data : (Array.isArray(data?.results) ? data.results : []);
 
     if (rawProducts.length === 0) {
-      return CHALDAL_PRODUCTS;
+      return [];
     }
 
     return rawProducts.map((p: any) => {
@@ -234,8 +219,8 @@ export async function fetchProductsFromBackend(): Promise<Product[]> {
       };
     });
   } catch (error) {
-    console.warn('Backend product API unreachable, using fallback products:', error);
-    return CHALDAL_PRODUCTS;
+    console.warn('Backend product API unreachable:', error);
+    return [];
   }
 }
 

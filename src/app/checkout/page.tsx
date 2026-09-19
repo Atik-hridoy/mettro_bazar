@@ -51,7 +51,7 @@ export default function CheckoutPage() {
   const t = TRANSLATIONS[language];
 
   // All catalog products for dynamic recommendations
-  const [allProducts, setAllProducts] = useState<Product[]>(CHALDAL_PRODUCTS);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
 
   // User Profile Contact Info State
   const [customerName, setCustomerName] = useState('');

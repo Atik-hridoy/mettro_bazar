@@ -86,171 +86,6 @@ const PROMO_BANNERS: BannerStory[] = [
   },
 ];
 
-// Recommended For You items matching screenshot 1:1
-// Recommended For You items matching screenshot 1:1
-const RECOMMENDED_PRODUCTS: Product[] = [
-  {
-    id: 'rec-1',
-    name: 'NeoCare Premium Baby Diaper Belt S (3-6 kg)',
-    banglaName: 'নিওকেয়ার প্রিমিয়াম বেবি ডায়াপার বেল্ট এস (৩-৬ কেজি)',
-    price: 939,
-    originalPrice: 1200,
-    unit: '50 pcs',
-    image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400&fit=crop&q=80',
-    deliveryTime: '3 hrs',
-    categorySlug: 'baby-care',
-    inStock: true,
-  },
-  {
-    id: 'rec-2',
-    name: 'BBQ Coal Bag Premium',
-    banglaName: 'বিবিকিউ প্রিমিয়াম কয়লা ব্যাগ',
-    price: 149,
-    unit: '1 kg',
-    image: 'https://images.unsplash.com/photo-1543083477-4f785aeafaa9?w=400&fit=crop&q=80',
-    deliveryTime: '3 hrs',
-    categorySlug: 'cleaning-supplies',
-    inStock: true,
-  },
-  {
-    id: 'rec-3',
-    name: "Mother's Smile Prima 1 Milk Tin (0-6 months)",
-    banglaName: 'মাদার্স স্মাইল প্রাইমা ১ মিল্ক টিন (০-৬ মাস)',
-    price: 850,
-    unit: '400 gm',
-    image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&fit=crop&q=80',
-    deliveryTime: '3 hrs',
-    categorySlug: 'baby-care',
-    inStock: true,
-  },
-  {
-    id: 'rec-4',
-    name: 'Bosny Non Poisonous Rat Glue Tray',
-    banglaName: 'বসনাই বিষমুক্ত ইঁদুর ধরার আঠা ট্রেই',
-    price: 570,
-    unit: '400 ml',
-    image: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=400&fit=crop&q=80',
-    deliveryTime: '3 hrs',
-    categorySlug: 'cleaning-supplies',
-    inStock: true,
-  },
-  {
-    id: 'rec-5',
-    name: 'Nestle Nescafe 3 in 1 Iced Frappe Cold Coffee',
-    banglaName: 'নেসলে নেসক্যাফে ৩ ইন ১ কোল্ড কফি',
-    price: 50,
-    unit: '30 gm',
-    image: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=400&fit=crop&q=80',
-    deliveryTime: '2 hrs',
-    categorySlug: 'dairy',
-    inStock: true,
-  },
-  {
-    id: 'rec-6',
-    name: 'Tibet Pumpkin Hair Oil Pure Herbal',
-    banglaName: 'তিব্বত পাম্পকিন ভেষজ চুল তেল',
-    price: 240,
-    unit: '200 ml',
-    image: 'https://images.unsplash.com/photo-1608248597359-00984a9191d9?w=400&fit=crop&q=80',
-    deliveryTime: '3 hrs',
-    categorySlug: 'beauty-makeup',
-    inStock: true,
-  },
-  {
-    id: 'rec-7',
-    name: 'Comfort Baby Diaper Pant S (3-8 kg)',
-    banglaName: 'কমফোর্ট বেবি ডায়াপার প্যান্ট এস (৩-৮ কেজি)',
-    price: 699,
-    originalPrice: 880,
-    unit: '42 pcs',
-    image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=400&fit=crop&q=80',
-    deliveryTime: '3 hrs',
-    categorySlug: 'baby-care',
-    inStock: true,
-  },
-];
-
-// Popular items matching screenshot 1:1
-const POPULAR_PRODUCTS: Product[] = [
-  {
-    id: 'pop-1',
-    name: 'Ispahani Mirzapore Tea Premium Bag',
-    banglaName: 'ইস্পাহানি মির্জাপুর প্রিমিয়াম চা পাতা',
-    price: 210,
-    unit: '400 gm',
-    image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=400&q=80',
-    deliveryTime: '2 hrs',
-    categorySlug: 'food',
-    inStock: true,
-  },
-  {
-    id: 'pop-2',
-    name: 'Teer Pure White Refined Sugar',
-    banglaName: 'তীর পিওর সাদা চিনি',
-    price: 140,
-    unit: '1 kg',
-    image: 'https://images.unsplash.com/photo-1587735243615-c03f25aaff15?w=400&q=80',
-    deliveryTime: '2 hrs',
-    categorySlug: 'food',
-    inStock: true,
-  },
-  {
-    id: 'pop-3',
-    name: 'Aarong Dairy Pure Premium Ghee',
-    banglaName: 'আড়ং ডেয়ারি খাঁটি প্রিমিয়াম ঘি',
-    price: 480,
-    unit: '200 gm',
-    image: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&q=80',
-    deliveryTime: '2 hrs',
-    categorySlug: 'dairy',
-    inStock: true,
-  },
-  {
-    id: 'pop-4',
-    name: 'Bashundhara Facial Tissue Box (2 Ply)',
-    banglaName: 'বসুন্ধরা ফেসিয়াল টিস্যু বক্স (২ প্লাই)',
-    price: 75,
-    unit: '120 pcs',
-    image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80',
-    deliveryTime: '2 hrs',
-    categorySlug: 'cleaning-supplies',
-    inStock: true,
-  },
-  {
-    id: 'pop-5',
-    name: 'Vim Dishwash Liquid Lemon Fresh',
-    banglaName: 'ভিম ডিশওয়াশ লিকুইড লেমন ফ্রেশ',
-    price: 135,
-    unit: '500 ml',
-    image: 'https://images.unsplash.com/photo-1585421514738-01798e348b17?w=400&q=80',
-    deliveryTime: '2 hrs',
-    categorySlug: 'cleaning-supplies',
-    inStock: true,
-  },
-  {
-    id: 'pop-6',
-    name: 'ACI Pure Salt Vacuum Evaporated',
-    banglaName: 'এসিআই পিওর ভ্যাকিউম লবণ',
-    price: 42,
-    unit: '1 kg',
-    image: 'https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?w=400&q=80',
-    deliveryTime: '2 hrs',
-    categorySlug: 'food',
-    inStock: true,
-  },
-  {
-    id: 'pop-7',
-    name: 'Radhuni Pure Mustard Oil Bottle',
-    banglaName: 'রাঁধুনী খাঁটি সরিষার তেল বোতল',
-    price: 360,
-    unit: '1 L',
-    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&q=80',
-    deliveryTime: '2 hrs',
-    categorySlug: 'food',
-    inStock: true,
-  },
-];
-
 export const RegisteredHomeView: React.FC = () => {
   const router = useRouter();
   const { language } = useCartStore();
@@ -264,7 +99,7 @@ export const RegisteredHomeView: React.FC = () => {
       try {
         const { fetchProductsFromBackend } = await import('@/lib/api');
         const prods = await fetchProductsFromBackend();
-        if (Array.isArray(prods) && prods.length > 0) {
+        if (Array.isArray(prods)) {
           setBackendProducts(prods);
         }
       } catch (err) {
@@ -282,11 +117,11 @@ export const RegisteredHomeView: React.FC = () => {
     return popularKeywords.some((kw) => nameLower.includes(kw));
   });
 
-  const displayPopular = popularItems.length >= 4 ? popularItems.slice(0, 8) : (backendProducts.length > 7 ? backendProducts.slice(7, 14) : POPULAR_PRODUCTS);
+  const displayPopular = popularItems.length > 0 ? popularItems.slice(0, 8) : (backendProducts.length > 0 ? backendProducts.slice(0, 8) : []);
 
-  // 2. Recommended: Diverse high-converting & featured products across multiple categories for cold-start discovery
+  // 2. Recommended: Diverse products across multiple categories
   const recommendedItems = backendProducts.filter((p) => !displayPopular.some((pop) => pop.id === p.id));
-  const displayRecommended = recommendedItems.length >= 4 ? recommendedItems.slice(0, 8) : (backendProducts.length > 0 ? backendProducts.slice(0, 7) : RECOMMENDED_PRODUCTS);
+  const displayRecommended = recommendedItems.length > 0 ? recommendedItems.slice(0, 8) : (backendProducts.length > 0 ? backendProducts.slice(0, 8) : []);
 
   const handleOpenStory = (banner: BannerStory) => {
     setActiveStory(banner);

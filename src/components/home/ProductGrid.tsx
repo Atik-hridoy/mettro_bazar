@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CHALDAL_PRODUCTS, Product } from '@/lib/constants';
+import { Product } from '@/lib/constants';
+import { fetchProductsFromBackend } from '@/lib/api';
 import { ProductCard } from '@/components/common/ProductCard';
 import { Pagination } from '@/components/common/Pagination';
 
@@ -16,13 +17,31 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   searchQuery = '',
   selectedCategory = 'popular',
 }) => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadProducts() {
+      setIsLoading(true);
+      const data = await fetchProductsFromBackend();
+      if (isMounted) {
+        setProducts(data);
+        setIsLoading(false);
+      }
+    }
+    loadProducts();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedCategory]);
 
-  const filteredProducts = CHALDAL_PRODUCTS.filter((prod) => {
+  const filteredProducts = products.filter((prod) => {
     const matchesSearch =
       searchQuery === '' ||
       prod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -57,9 +76,13 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
         </span>
       </div>
 
-      {filteredProducts.length === 0 ? (
+      {isLoading ? (
+        <div className="py-12 text-center text-zinc-400 text-sm animate-pulse">
+          Loading products from store...
+        </div>
+      ) : filteredProducts.length === 0 ? (
         <div className="py-12 text-center text-zinc-500 text-sm">
-          No products found for "{searchQuery}"
+          {searchQuery ? `No products found for "${searchQuery}"` : 'No products available.'}
         </div>
       ) : (
         <>
@@ -74,13 +97,15 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
           </div>
 
           {/* Standard Pagination Controls */}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={filteredProducts.length}
-            itemsPerPage={ITEMS_PER_PAGE}
-            onPageChange={setCurrentPage}
-          />
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredProducts.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </>
       )}
     </section>
