@@ -66,8 +66,19 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* Bottom Copyright Bar */}
-      <div className="border-t border-zinc-200/80 bg-white py-4 px-4 sm:px-8 text-center text-[11px] text-zinc-500">
+      <div className="border-t border-zinc-200/80 bg-white py-4 px-4 sm:px-8 text-center text-[11px] text-zinc-500 space-y-1">
         <p>© 2026 <strong>METRO BAZAR</strong>. All rights reserved.</p>
+        <p className="text-[10px] text-zinc-400">
+          Developed and maintained by{' '}
+          <a
+            href="https://innovationark.co"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-[#7533CB] hover:underline"
+          >
+            innovationark.co
+          </a>
+        </p>
       </div>
 
       {/* Contact Us Interactive Modal */}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronRight, ChevronLeft, Search } from 'lucide-react';
 import { ProductCard } from '@/components/common/ProductCard';
+import { EmptyState } from '@/components/common/EmptyState';
 import { Product } from '@/lib/constants';
 import { useCartStore } from '@/store/useCartStore';
 import { TRANSLATIONS } from '@/lib/translations';
@@ -285,21 +286,31 @@ export const RegisteredHomeView: React.FC = () => {
           <h2 className="text-base sm:text-lg font-bold text-zinc-900">
             {t.recommendedForYou}
           </h2>
-          <Link
-            href="/recommended"
-            className="text-xs font-semibold text-[#7533CB] hover:underline flex items-center gap-0.5 cursor-pointer"
-          >
-            <span>{t.viewMore}</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
+          {filteredRecommended.length > 0 && (
+            <Link
+              href="/recommended"
+              className="text-xs font-semibold text-[#7533CB] hover:underline flex items-center gap-0.5 cursor-pointer"
+            >
+              <span>{t.viewMore}</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
         </div>
 
-        {/* 2 cols on mobile, 3-7 cols on larger screens */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2.5 sm:gap-4">
-          {filteredRecommended.map((prod) => (
-            <ProductCard key={prod.id} product={prod} categoryName="Recommended" />
-          ))}
-        </div>
+        {filteredRecommended.length === 0 ? (
+          <EmptyState
+            title="কোনো প্রোডাক্ট যুক্ত করা হয়নি"
+            titleBn="কোনো প্রোডাক্ট যুক্ত করা হয়নি"
+            description="বর্তমানে মোট ক্যাটালগে কোনো প্রোডাক্ট নেই। এডমিন ড্যাশবোর্ড থেকে প্রোডাক্ট যুক্ত করার পর এখানে প্রদর্শিত হবে।"
+            descriptionBn="বর্তমানে মোট ক্যাটালগে কোনো প্রোডাক্ট নেই। এডমিন ড্যাশবোর্ড থেকে প্রোডাক্ট যুক্ত করার পর এখানে প্রদর্শিত হবে।"
+          />
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2.5 sm:gap-4">
+            {filteredRecommended.map((prod) => (
+              <ProductCard key={prod.id} product={prod} categoryName="Recommended" />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 3. Section: Popular */}
@@ -308,21 +319,31 @@ export const RegisteredHomeView: React.FC = () => {
           <h2 className="text-base sm:text-lg font-bold text-zinc-900">
             {t.popular}
           </h2>
-          <Link
-            href="/popular"
-            className="text-xs font-semibold text-[#7533CB] hover:underline flex items-center gap-0.5 cursor-pointer"
-          >
-            <span>{t.viewMore}</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
+          {filteredPopular.length > 0 && (
+            <Link
+              href="/popular"
+              className="text-xs font-semibold text-[#7533CB] hover:underline flex items-center gap-0.5 cursor-pointer"
+            >
+              <span>{t.viewMore}</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
         </div>
 
-        {/* 2 cols on mobile, 3-7 cols on larger screens */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2.5 sm:gap-4">
-          {filteredPopular.map((prod) => (
-            <ProductCard key={prod.id} product={prod} categoryName="Popular" />
-          ))}
-        </div>
+        {filteredPopular.length === 0 ? (
+          <EmptyState
+            title="কোনো জনপ্রিয় আইটেম নেই"
+            titleBn="কোনো জনপ্রিয় আইটেম নেই"
+            description="নতুন প্রোডাক্ট যোগ করতে এডমিন প্যানেল ব্যবহার করুন।"
+            descriptionBn="নতুন প্রোডাক্ট যোগ করতে এডমিন প্যানেল ব্যবহার করুন।"
+          />
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2.5 sm:gap-4">
+            {filteredPopular.map((prod) => (
+              <ProductCard key={prod.id} product={prod} categoryName="Popular" />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

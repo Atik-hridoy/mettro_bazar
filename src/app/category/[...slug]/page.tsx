@@ -8,6 +8,7 @@ import { CategoryItem, Product } from '@/lib/constants';
 import { fetchCategoriesFromBackend, fetchProductsFromBackend } from '@/lib/api';
 import { ProductCard } from '@/components/common/ProductCard';
 import { Pagination } from '@/components/common/Pagination';
+import { EmptyState } from '@/components/common/EmptyState';
 
 // Helper to find a category and its breadcrumb path from the tree
 function findCategoryPath(
@@ -234,11 +235,14 @@ export default function CategoryPage() {
         </div>
 
         {categoryProducts.length === 0 ? (
-          <div className="py-12 text-center text-zinc-400 text-sm space-y-2 bg-zinc-50/50 rounded-2xl border border-zinc-100">
-            <PackageX className="w-8 h-8 text-zinc-300 mx-auto" />
-            <div>No products added to this category yet.</div>
-            <div className="text-xs text-zinc-500">Create products under this category from Admin Dashboard!</div>
-          </div>
+          <EmptyState
+            title={`"${target?.name}" ক্যাটাগরিতে কোনো পণ্য নেই`}
+            titleBn={`"${target?.name}" ক্যাটাগরিতে কোনো পণ্য নেই`}
+            description="বর্তমানে এই ক্যাটাগরির অধীনে কোনো পণ্য যুক্ত করা হয়নি।"
+            descriptionBn="বর্তমানে এই ক্যাটাগরির অধীনে কোনো পণ্য যুক্ত করা হয়নি।"
+            actionHref="/"
+            actionText="হোম পেজে যান"
+          />
         ) : (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3 sm:gap-4">

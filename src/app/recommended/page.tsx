@@ -2,11 +2,13 @@
 
 import React from 'react';
 import { ProductCard } from '@/components/common/ProductCard';
+import { EmptyState } from '@/components/common/EmptyState';
 import { Product } from '@/lib/constants';
 import { useCartStore } from '@/store/useCartStore';
 
 export default function RecommendedPage() {
   const [products, setProducts] = React.useState<Product[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const { language } = useCartStore();
   const isBN = language === 'BN';
 
@@ -26,6 +28,8 @@ export default function RecommendedPage() {
         }
       } catch (err) {
         console.error('Failed to fetch backend products for Recommended page:', err);
+      } finally {
+        setLoading(false);
       }
     }
     loadProducts();
@@ -41,16 +45,32 @@ export default function RecommendedPage() {
       {/* 2. Thin Horizontal Divider Line */}
       <div className="w-full border-b border-zinc-200 mb-6" />
 
-      {/* 3. Products Grid matching 1:1 format */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3 sm:gap-4">
-        {products.map((prod) => (
-          <ProductCard
-            key={prod.id}
-            product={prod}
-            categoryName={isBN ? 'সুপারিশকৃত' : 'Recommended'}
-          />
-        ))}
-      </div>
+      {/* 3. Products Grid or Professional Empty State */}
+      {loading ? (
+        <div className="py-12 text-center text-xs text-zinc-400 font-medium animate-pulse">
+          {isBN ? 'সুপারিশকৃত পণ্যসমূহ লোড হচ্ছে...' : 'Loading recommended products...'}
+        </div>
+      ) : products.length === 0 ? (
+        <EmptyState
+          title="কোনো সুপারিশকৃত পণ্য পাওয়া যায়নি"
+          titleBn="কোনো সুপারিশকৃত পণ্য পাওয়া যায়নি"
+          description="বর্তমানে ক্যাটালগে কোনো পণ্য যুক্ত নেই। অনুগ্রহ করে এডমিন প্যানেল থেকে নতুন পণ্য যুক্ত করুন।"
+          descriptionBn="বর্তমানে ক্যাটালগে কোনো পণ্য যুক্ত নেই। অনুগ্রহ করে এডমিন প্যানেল থেকে নতুন পণ্য যুক্ত করুন।"
+          actionHref="/"
+          actionText="হোম পেজে যান"
+          actionTextBn="হোম পেজে যান"
+        />
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3 sm:gap-4">
+          {products.map((prod) => (
+            <ProductCard
+              key={prod.id}
+              product={prod}
+              categoryName={isBN ? 'সুপারিশকৃত' : 'Recommended'}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

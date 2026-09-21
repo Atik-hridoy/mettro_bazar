@@ -69,14 +69,10 @@ export const Header: React.FC<HeaderProps> = ({
         setIsLoadingSearch(true);
         const backendProducts = await fetchProductsFromBackend();
         if (isMounted) {
-          if (backendProducts && backendProducts.length > 0) {
-            setApiProducts(backendProducts);
-          } else {
-            setApiProducts(CHALDAL_PRODUCTS);
-          }
+          setApiProducts(backendProducts || []);
         }
       } catch (err) {
-        if (isMounted) setApiProducts(CHALDAL_PRODUCTS);
+        if (isMounted) setApiProducts([]);
       } finally {
         if (isMounted) setIsLoadingSearch(false);
       }
@@ -112,10 +108,9 @@ export const Header: React.FC<HeaderProps> = ({
 
   // Filter Matching Products
   const q = searchQuery.trim().toLowerCase();
-  const allProductsList = apiProducts.length > 0 ? apiProducts : CHALDAL_PRODUCTS;
 
   const matchedProducts = q
-    ? allProductsList.filter(
+    ? apiProducts.filter(
         (p) =>
           p.name?.toLowerCase().includes(q) ||
           p.banglaName?.toLowerCase().includes(q) ||
