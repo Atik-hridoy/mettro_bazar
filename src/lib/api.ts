@@ -16,14 +16,16 @@ export const getApiBaseUrl = (): string => {
     if (host.includes('metrobazar.online')) {
       return 'https://api.metrobazar.online/api';
     }
+
+    // 3. Dynamic VPS IP or custom domain fallback
+    return `${window.location.protocol}//${host}:8000/api`;
   }
   
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL;
   }
 
-  // Default for Localhost / Dev Mode
-  return 'http://127.0.0.1:8000/api';
+  return 'https://api.metrobazar.online/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
