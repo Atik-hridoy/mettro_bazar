@@ -533,7 +533,13 @@ export async function placeOrderOnBackend(payload: {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
+    const rawText = await res.text();
+    let data: any = {};
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      data = { detail: 'Server error while placing order. Please try again.' };
+    }
     if (!res.ok) {
       throw new Error(data.detail || data.error || 'Failed to place order.');
     }
@@ -565,5 +571,80 @@ export async function fetchUserOrdersFromBackend(userPhone?: string, userEmail?:
   }
   return [];
 }
+
+export interface BackendBanner {
+  id: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  target_type: string;
+  target_id: string;
+  display_order: number;
+  is_active: boolean;
+  start_date?: string;
+  end_date?: string;
+}
+
+export async function fetchBannersFromBackend(includeAll: boolean = false): Promise<BackendBanner[]> {
+  try {
+    const url = `${API_BASE_URL}/promotions/banners/${includeAll ? '?all=true' : ''}`;
+    const res = await loggedFetch(url, { cache: 'no-store' });
+    if (!res.ok) {
+      throw new Error(`Failed to fetch banners: ${res.status}`);
+    }
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : (Array.isArray(data?.results) ? data.results : []);
+    
+    // Fix media relative image URLs
+    return list.map((b: any) => {
+      let img = b.image || '';
+      if (img && img.startsWith('/')) {
+        const backendOrigin = API_BASE_URL.replace('/api', '');
+        img = `${backendOrigin}${img}`;
+      }
+      return {
+        ...b,
+        image: img,
+      };
+    });
+  } catch (err) {
+    console.warn('Backend banner API error:', err);
+    return [];
+  }
+}
+
+export async function uploadBannerToBackend(formData: FormData): Promise<BackendBanner> {
+  const url = `${API_BASE_URL}/promotions/banners/`;
+  const res = await loggedFetch(url, {
+    method: 'POST',
+    body: formData,
+    // Note: Do not set Content-Type header manually for FormData so browser sets boundary
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    let errorMsg = 'Failed to upload banner.';
+    if (typeof data.detail === 'string') errorMsg = data.detail;
+    else if (typeof data === 'object') errorMsg = JSON.stringify(data);
+    throw new Error(errorMsg);
+  }
+  let img = data.image || '';
+  if (img && img.startsWith('/')) {
+    const backendOrigin = API_BASE_URL.replace('/api', '');
+    img = `${backendOrigin}${img}`;
+  }
+  return { ...data, image: img };
+}
+
+export async function deleteBannerFromBackend(bannerId: string): Promise<boolean> {
+  try {
+    const url = `${API_BASE_URL}/promotions/banners/${bannerId}/`;
+    const res = await loggedFetch(url, { method: 'DELETE' });
+    return res.ok;
+  } catch (err) {
+    console.error('Delete banner error:', err);
+    return false;
+  }
+}
+
 
 

@@ -1,89 +1,73 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, X, Search } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Search } from 'lucide-react';
 import { ProductCard } from '@/components/common/ProductCard';
 import { Product } from '@/lib/constants';
 import { useCartStore } from '@/store/useCartStore';
 import { TRANSLATIONS } from '@/lib/translations';
 
-interface BannerStory {
+interface PromoBanner {
   id: string;
   title: string;
   subtitle: string;
-  modalTitle: string;
-  modalSubtitle?: string;
+  badge: string;
   bgGradient: string;
   image: string;
-  modalImage: string;
-  badge: string;
-  categoryLink: string;
+  link: string;
+  ctaText: string;
 }
 
-// Portrait Banner Cards matching Chaldal 1:1
-const PROMO_BANNERS: BannerStory[] = [
+const HERO_CAROUSEL_BANNERS: PromoBanner[] = [
   {
-    id: 'promo-1',
-    title: 'প্রিমিয়াম কেয়ার',
-    subtitle: 'মেট্রো বাজার প্রিমিয়াম কেয়ার মেম্বারশিপ',
-    modalTitle: 'মেট্রো বাজার প্রিমিয়াম কেয়ারে বিশেষ ছাড় ও ক্যাশব্যাক',
-    modalSubtitle: 'আজই জয়েন করুন এবং পান ফ্রি ডেলিভারি ও এক্সক্লুসিভ অফার',
-    bgGradient: 'from-amber-400 to-yellow-500',
-    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80',
-    modalImage: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80',
-    badge: 'PREMIUM',
-    categoryLink: '/category/food',
+    id: 'banner-1',
+    title: 'মেট্রো বাজার ডেইলি সুপার সেভিংস!',
+    subtitle: 'নিত্যপ্রয়োজনীয় গ্রোসারি ও সেরা পণ্যে ৪০% পর্যন্ত বিশেষ ছাড়',
+    badge: 'SUPER SAVINGS',
+    bgGradient: 'from-[#7533CB] via-[#5C23A6] to-[#3B1273]',
+    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1000&auto=format&fit=crop&q=80',
+    link: '/category/food',
+    ctaText: 'এখনই কেনাকাটা করুন',
   },
   {
-    id: 'promo-2',
-    title: 'সকল ধরণের ডায়াপার',
-    subtitle: 'কিনুন মেট্রো বাজার থেকে',
-    modalTitle: 'সকল ধরণের ডায়াপার কিনুন মেট্রো বাজার থেকে',
-    modalSubtitle: 'সেরা ব্র্যান্ডের বেবি ডায়াপারে আকর্ষণীয় ডিসকাউন্ট',
-    bgGradient: 'from-sky-400 to-blue-600',
-    image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=500&q=80',
-    modalImage: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=600&q=80',
-    badge: 'OFFERS',
-    categoryLink: '/category/baby-care',
+    id: 'banner-2',
+    title: 'প্রিমিয়াম বেবি কেয়ার ও ডায়াপার মেলা',
+    subtitle: 'সেরা ব্র্যান্ডের ডায়াপার ও বেবি ফুডে বিশেষ মূল্যছাড়',
+    badge: 'BABY CARE',
+    bgGradient: 'from-blue-600 via-indigo-600 to-purple-700',
+    image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1000&auto=format&fit=crop&q=80',
+    link: '/category/baby-care',
+    ctaText: 'অফার দেখুন',
   },
   {
-    id: 'promo-3',
-    title: 'Cat Litter & Food',
-    subtitle: 'পোষা প্রাণীর সেরা খাবার ও যত্ন',
-    modalTitle: 'পোষা প্রাণীর প্রয়োজনীয় খাবার ও লিটার কিনুন',
-    modalSubtitle: 'আপনার প্রিয় বিড়ালের জন্য স্বাস্থ্যকর প্রিমিয়াম ফুড',
-    bgGradient: 'from-orange-400 to-amber-600',
-    image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=500&q=80',
-    modalImage: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&q=80',
-    badge: 'PET CARE',
-    categoryLink: '/category/pet-care',
+    id: 'banner-3',
+    title: 'খামার থেকে তাজা শাক-সবজি ও ফলমূল',
+    subtitle: '১০০% তাজা ও অর্গানিক গ্রোসারি সরাসরি আপনার দরজায়',
+    badge: 'FRESH PRODUCE',
+    bgGradient: 'from-emerald-700 via-teal-700 to-green-900',
+    image: 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=1000&auto=format&fit=crop&q=80',
+    link: '/category/food',
+    ctaText: 'তাজা বাজার করুন',
   },
   {
-    id: 'promo-4',
-    title: 'Corporate Solution',
-    subtitle: 'অফিস ও বাল্ক অর্ডারের বিশেষ সুবিধা',
-    modalTitle: 'অফিস সাপ্লাই ও করপোরেট বাল্ক অর্ডার সমাধান',
-    modalSubtitle: 'কোম্পানি ও প্রতিষ্ঠানের জন্য বিশেষ ভ্যাট চালান ও ডিসকাউন্ট',
-    bgGradient: 'from-amber-500 to-yellow-600',
-    image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=500&q=80',
-    modalImage: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=600&q=80',
-    badge: 'B2B',
-    categoryLink: '/category/stationery-office',
+    id: 'banner-4',
+    title: 'অফিস ও করপোরেট বাল্ক অর্ডার সলিউশন',
+    subtitle: 'প্রতিষ্ঠানের কেনাকাটায় বিশেষ মূল্যছাড় ও ভ্যাট চালান সুবিধা',
+    badge: 'B2B CORPORATE',
+    bgGradient: 'from-amber-600 via-orange-600 to-amber-800',
+    image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=1000&auto=format&fit=crop&q=80',
+    link: '/category/stationery-office',
+    ctaText: 'বিস্তারিত জানুন',
   },
-  {
-    id: 'promo-5',
-    title: 'Insect & Pest Control',
-    subtitle: 'বাসাবাড়ির সুরক্ষিত স্বাস্থ্যকর পরিবেশ',
-    modalTitle: 'বাসাবাড়ি কীটমুক্ত রাখুন সুরক্ষিত উপায়ে',
-    modalSubtitle: 'মশা, মাছি ও পোকামাকড় তাড়ানোর কার্যকারী সমাধান',
-    bgGradient: 'from-teal-500 to-emerald-700',
-    image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&q=80',
-    modalImage: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&q=80',
-    badge: 'HYGIENE',
-    categoryLink: '/category/cleaning-supplies',
-  },
+];
+
+const GRADIENT_LIST = [
+  'from-[#7533CB] via-[#5C23A6] to-[#3B1273]',
+  'from-blue-600 via-indigo-600 to-purple-700',
+  'from-emerald-700 via-teal-700 to-green-900',
+  'from-amber-600 via-orange-600 to-amber-800',
 ];
 
 export const RegisteredHomeView: React.FC = () => {
@@ -91,26 +75,100 @@ export const RegisteredHomeView: React.FC = () => {
   const { language } = useCartStore();
   const t = TRANSLATIONS[language];
   const [mobileSearchQuery, setMobileSearchQuery] = useState('');
-  const [activeStory, setActiveStory] = useState<BannerStory | null>(null);
   const [backendProducts, setBackendProducts] = useState<Product[]>([]);
+  const [carouselBanners, setCarouselBanners] = useState<PromoBanner[]>(HERO_CAROUSEL_BANNERS);
 
-  React.useEffect(() => {
-    async function loadProducts() {
+  // Banner Carousel State
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  // Auto slide every 4 seconds
+  useEffect(() => {
+    if (isPaused || carouselBanners.length === 0) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % carouselBanners.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [isPaused, carouselBanners.length]);
+
+  const handleNext = () => {
+    if (carouselBanners.length === 0) return;
+    setCurrentSlide((prev) => (prev + 1) % carouselBanners.length);
+  };
+
+  const handlePrev = () => {
+    if (carouselBanners.length === 0) return;
+    setCurrentSlide((prev) => (prev - 1 + carouselBanners.length) % carouselBanners.length);
+  };
+
+  // Touch Swipe Handlers for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    if (distance > 50) {
+      handleNext();
+    } else if (distance < -50) {
+      handlePrev();
+    }
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
+  useEffect(() => {
+    async function loadBannersAndProducts() {
       try {
-        const { fetchProductsFromBackend } = await import('@/lib/api');
+        const { fetchProductsFromBackend, fetchBannersFromBackend } = await import('@/lib/api');
+        
+        // Load products
         const prods = await fetchProductsFromBackend();
         if (Array.isArray(prods)) {
           setBackendProducts(prods);
         }
+
+        // Load active banners from backend
+        const apiBanners = await fetchBannersFromBackend(false);
+        if (Array.isArray(apiBanners) && apiBanners.length > 0) {
+          const mapped: PromoBanner[] = apiBanners.map((b, idx) => {
+            let targetLink = '/category/food';
+            if (b.target_type === 'category') {
+              targetLink = `/category/${b.target_id || 'food'}`;
+            } else if (b.target_type === 'product') {
+              targetLink = `/product/${b.target_id}`;
+            } else if (b.target_type === 'external') {
+              targetLink = b.target_id || '#';
+            }
+
+            return {
+              id: b.id,
+              title: b.title,
+              subtitle: b.subtitle || 'মেট্রো বাজারে নিত্যপ্রয়োজনীয় অফার ও বিশেষ ছাড়!',
+              badge: b.target_type ? b.target_type.toUpperCase().replace('_', ' ') : 'PROMOTION',
+              bgGradient: GRADIENT_LIST[idx % GRADIENT_LIST.length],
+              image: b.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1000&auto=format&fit=crop&q=80',
+              link: targetLink,
+              ctaText: 'এখনই কেনাকাটা করুন',
+            };
+          });
+          setCarouselBanners(mapped);
+        }
       } catch (err) {
-        console.error('Failed to fetch backend products for Registered Home:', err);
+        console.error('Failed to fetch backend data for Registered Home:', err);
       }
     }
-    loadProducts();
+    loadBannersAndProducts();
   }, []);
 
   // Smart Cold-Start & Popularity Algorithm for New Fresh Users:
-  // 1. Popular: Everyday essential staple necessities (Oil, Rice, Salt, Sugar, Eggs, Tea, Milk, Dal, Dishwash)
   const popularKeywords = ['oil', 'rice', 'salt', 'sugar', 'egg', 'tea', 'milk', 'dal', 'potato', 'onion', 'dishwash', 'চাল', 'তেল', 'ডিম', 'পেঁয়াজ', 'আলু', 'চা', 'দুধ'];
   const popularItems = backendProducts.filter((p) => {
     const nameLower = (p.name + ' ' + (p.banglaName || '')).toLowerCase();
@@ -119,21 +177,9 @@ export const RegisteredHomeView: React.FC = () => {
 
   const displayPopular = popularItems.length > 0 ? popularItems.slice(0, 8) : (backendProducts.length > 0 ? backendProducts.slice(0, 8) : []);
 
-  // 2. Recommended: Diverse products across multiple categories
+  // Recommended: Diverse products across multiple categories
   const recommendedItems = backendProducts.filter((p) => !displayPopular.some((pop) => pop.id === p.id));
   const displayRecommended = recommendedItems.length > 0 ? recommendedItems.slice(0, 8) : (backendProducts.length > 0 ? backendProducts.slice(0, 8) : []);
-
-  const handleOpenStory = (banner: BannerStory) => {
-    setActiveStory(banner);
-  };
-
-  const handleVisitNow = () => {
-    if (activeStory) {
-      const link = activeStory.categoryLink;
-      setActiveStory(null);
-      router.push(link);
-    }
-  };
 
   const filteredRecommended = mobileSearchQuery
     ? displayRecommended.filter((p) =>
@@ -167,32 +213,70 @@ export const RegisteredHomeView: React.FC = () => {
         </div>
       </div>
 
-      {/* 1. Top Portrait Promo Banners Row matching Screenshot 1:1 */}
-      <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-1 select-none custom-scrollbar">
-        {PROMO_BANNERS.map((banner) => (
-          <div
-            key={banner.id}
-            onClick={() => handleOpenStory(banner)}
-            className="group relative w-28 sm:w-36 md:w-40 h-44 sm:h-60 md:h-64 shrink-0 rounded-xl overflow-hidden shadow-2xs cursor-pointer select-none transition-all hover:-translate-y-1 hover:shadow-sm border border-zinc-200/80"
-          >
-            <img
-              src={banner.image}
-              alt={banner.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-2 sm:p-2.5 text-white">
-              <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-amber-300 mb-0.5">
-                {banner.badge}
-              </span>
-              <h3 className="text-[11px] sm:text-xs font-bold leading-tight line-clamp-2">
-                {banner.title}
-              </h3>
-              <p className="text-[9px] sm:text-[10px] text-zinc-200 line-clamp-1 mt-0.5 font-normal">
-                {banner.subtitle}
-              </p>
+      {/* 1. Auto-Changing & Swappable Hero Banner Slider */}
+      <div
+        className="relative w-full h-44 sm:h-56 md:h-64 lg:h-72 rounded-2xl overflow-hidden shadow-sm border border-zinc-200/80 group select-none"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {carouselBanners.map((banner, index) => {
+          const isActive = index === currentSlide;
+
+          return (
+            <div
+              key={banner.id}
+              className={`absolute inset-0 w-full h-full transition-all duration-700 ease-in-out flex items-center ${
+                isActive
+                  ? 'opacity-100 translate-x-0 z-10 pointer-events-auto'
+                  : 'opacity-0 translate-x-4 z-0 pointer-events-none'
+              }`}
+            >
+              {/* Pure Clean Banner Image Without Any Color or Shade Overlay */}
+              <Link href={banner.link} className="relative w-full h-full block group/banner">
+                <img
+                  src={banner.image}
+                  alt={banner.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover/banner:scale-[1.01]"
+                />
+              </Link>
             </div>
-          </div>
-        ))}
+          );
+        })}
+
+        {/* Left Arrow Button */}
+        <button
+          onClick={handlePrev}
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/30 hover:bg-black/60 backdrop-blur-md text-white flex items-center justify-center transition-all cursor-pointer opacity-80 group-hover:opacity-100 hover:scale-110"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+        </button>
+
+        {/* Right Arrow Button */}
+        <button
+          onClick={handleNext}
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/30 hover:bg-black/60 backdrop-blur-md text-white flex items-center justify-center transition-all cursor-pointer opacity-80 group-hover:opacity-100 hover:scale-110"
+          aria-label="Next slide"
+        >
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+        </button>
+
+        {/* Bottom Pagination Dots */}
+        <div className="absolute bottom-3 left-0 right-0 z-20 flex items-center justify-center gap-2">
+          {carouselBanners.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentSlide(i)}
+              className={`h-2 rounded-full transition-all cursor-pointer ${
+                i === currentSlide ? 'w-7 bg-amber-400' : 'w-2 bg-white/60 hover:bg-white'
+              }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
       </div>
 
       {/* 2. Section: Recommended For You */}
@@ -240,70 +324,7 @@ export const RegisteredHomeView: React.FC = () => {
           ))}
         </div>
       </div>
-
-      {/* 4. Banner Modal / Story Viewer matching Chaldal Screenshot 1:1 */}
-      {activeStory && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          {/* Dark Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-2xs transition-opacity"
-            onClick={() => setActiveStory(null)}
-          />
-
-          {/* Tall Story Card Box */}
-          <div className="relative w-full max-w-sm sm:max-w-md h-[560px] sm:h-[620px] bg-white rounded-2xl overflow-hidden shadow-2xl z-10 flex flex-col justify-between animate-in zoom-in-95 duration-200 border border-zinc-100">
-            {/* Top Story Progress Bar */}
-            <div className="absolute top-0 left-0 right-0 z-20 px-3 pt-2">
-              <div className="w-full h-1 bg-zinc-200/60 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 w-full animate-in fade-in" />
-              </div>
-            </div>
-
-            {/* Top Right Close Button */}
-            <button
-              onClick={() => setActiveStory(null)}
-              className="absolute top-4 right-4 z-30 p-1.5 rounded-full bg-black/10 hover:bg-black/20 text-zinc-700 transition-colors cursor-pointer"
-              aria-label="Close story"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Story Content Area */}
-            <div className="relative flex-1 flex flex-col items-center justify-between p-5 sm:p-6 pt-10 text-center select-none">
-              {/* Top Bengali Headline */}
-              <div className="z-10 max-w-xs space-y-1">
-                <h2 className="text-xl sm:text-2xl font-black text-[#4A235A] tracking-tight leading-snug">
-                  {activeStory.modalTitle}
-                </h2>
-                {activeStory.modalSubtitle && (
-                  <p className="text-xs text-zinc-500 font-medium">
-                    {activeStory.modalSubtitle}
-                  </p>
-                )}
-              </div>
-
-              {/* Center Character / Illustration Graphic */}
-              <div className="w-56 h-56 sm:w-72 sm:h-72 my-auto relative flex items-center justify-center">
-                <img
-                  src={activeStory.modalImage}
-                  alt={activeStory.title}
-                  className="w-full h-full object-contain drop-shadow-xl"
-                />
-              </div>
-
-              {/* Bottom "Visit Now" Action Button matching Screenshot 1:1 */}
-              <div className="w-full z-10 pt-4">
-                <button
-                  onClick={handleVisitNow}
-                  className="w-full max-w-[200px] mx-auto py-2.5 px-6 bg-[#7533CB] hover:bg-[#632AAD] text-white font-bold text-sm rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer transform hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  Visit Now
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
+

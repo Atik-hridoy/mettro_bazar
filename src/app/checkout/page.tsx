@@ -19,6 +19,7 @@ import {
   Banknote,
   ShoppingBag,
   Edit2,
+  Receipt,
 } from 'lucide-react';
 import { useCartStore, Address } from '@/store/useCartStore';
 import { ProductCard } from '@/components/common/ProductCard';
@@ -68,8 +69,16 @@ export default function CheckoutPage() {
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-  const SHIPPING_FEE = totalPrice >= 1000 || totalPrice === 0 ? 0 : 49;
+  // Delivery Fee & Zone State (Inside Rangpur: 25 Tk, Outside Rangpur: 50 Tk)
+  const [deliveryZone, setDeliveryZone] = useState<'inside' | 'outside'>('inside');
+  const SHIPPING_FEE = deliveryZone === 'inside' ? 25 : 50;
   const finalTotal = totalPrice + SHIPPING_FEE;
+
+  // Order Confirmation State
+  const [createdOrderNumber, setCreatedOrderNumber] = useState<string>('');
+  const [confirmedOrderTotal, setConfirmedOrderTotal] = useState<number>(0);
+  const [confirmedDeliveryFee, setConfirmedDeliveryFee] = useState<number>(25);
+  const [confirmedDeliveryZone, setConfirmedDeliveryZone] = useState<'inside' | 'outside'>('inside');
 
   // Fetch backend products to merge into catalog for category recommendations
   useEffect(() => {
@@ -177,7 +186,7 @@ export default function CheckoutPage() {
             id: String(a.id),
             label: a.title || 'Home',
             details: `${a.street_address}${a.area ? `, ${a.area}` : ''}${a.city ? `, ${a.city}` : ''}`,
-            city: a.city || 'Dhaka',
+            city: a.city || 'Rangpur',
             phone: customerPhone || '01333410106',
           }));
           setBackendAddresses(mapped);
@@ -207,7 +216,7 @@ export default function CheckoutPage() {
           id: String(a.id),
           label: a.title || 'Home',
           details: `${a.street_address}${a.area ? `, ${a.area}` : ''}${a.city ? `, ${a.city}` : ''}`,
-          city: a.city || 'Dhaka',
+          city: a.city || 'Rangpur',
           phone: customerPhone || '01333410106',
         }));
         setBackendAddresses(mapped);
@@ -217,9 +226,6 @@ export default function CheckoutPage() {
       console.error('Error refreshing addresses:', err);
     }
   };
-
-  const [createdOrderNumber, setCreatedOrderNumber] = useState<string>('');
-  const [confirmedOrderTotal, setConfirmedOrderTotal] = useState<number>(0);
 
   const handleProceed = async () => {
     setPhoneError('');
@@ -243,7 +249,10 @@ export default function CheckoutPage() {
 
     setIsPlacingOrder(true);
     try {
+      const currentShippingFee = SHIPPING_FEE;
       const currentOrderTotal = finalTotal;
+      const currentZone = deliveryZone;
+
       const orderPayload = {
         customer_name: customerName || 'Customer',
         customer_phone: cleanPhone,
@@ -264,9 +273,9 @@ export default function CheckoutPage() {
           subtotal: item.price * item.quantity,
         })),
         subtotal: totalPrice,
-        delivery_fee: SHIPPING_FEE,
+        delivery_fee: currentShippingFee,
         total_amount: currentOrderTotal,
-        note: '',
+        note: `Delivery Zone: ${currentZone === 'inside' ? 'Inside Rangpur (৳25)' : 'Outside Rangpur (৳50)'}`,
       };
 
       const res = await placeOrderOnBackend(orderPayload);
@@ -274,6 +283,8 @@ export default function CheckoutPage() {
       const totalPaid = Number(res?.order?.total_amount) || currentOrderTotal;
       setCreatedOrderNumber(orderNum);
       setConfirmedOrderTotal(totalPaid);
+      setConfirmedDeliveryFee(currentShippingFee);
+      setConfirmedDeliveryZone(currentZone);
       setIsOrderComplete(true);
       clearCart();
     } catch (err: any) {
@@ -299,13 +310,15 @@ export default function CheckoutPage() {
             : `Thank you ${customerName || ''}! Your order has been placed successfully with METRO BAZAR. Our team is preparing your items for delivery.`}
         </p>
 
-        <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4 mb-6 max-w-md w-full text-left text-xs space-y-2">
-          {createdOrderNumber && (
-            <div className="flex justify-between text-zinc-600 pb-2 border-b border-zinc-200 font-bold">
-              <span>{isBN ? 'অর্ডার নম্বর:' : 'Order Number:'}</span>
-              <strong className="text-emerald-600 font-mono text-sm">{createdOrderNumber}</strong>
-            </div>
-          )}
+        {/* Invoice Summary Box */}
+        <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4 sm:p-5 mb-6 max-w-md w-full text-left text-xs space-y-2.5 shadow-2xs">
+          <div className="flex justify-between items-center text-zinc-700 pb-2 border-b border-zinc-200 font-bold">
+            <span className="flex items-center gap-1.5">
+              <Receipt className="w-4 h-4 text-[#7533CB]" />
+              {isBN ? 'ইনভয়েস মেমো (Receipt):' : 'Invoice Memo:'}
+            </span>
+            <strong className="text-emerald-600 font-mono text-sm">{createdOrderNumber}</strong>
+          </div>
           <div className="flex justify-between text-zinc-600">
             <span>{isBN ? 'গ্রাহকের নাম:' : 'Customer Name:'}</span>
             <strong className="text-zinc-900">{customerName || 'Customer'}</strong>
@@ -322,9 +335,29 @@ export default function CheckoutPage() {
               <strong className="text-zinc-900 truncate max-w-[200px]">{activeAddress.details}</strong>
             </div>
           )}
-          <div className="flex justify-between text-zinc-600 pt-2 border-t border-zinc-200 font-bold text-sm">
-            <span>{isBN ? 'মোট প্রদেয় মূল্য:' : 'Total Payable:'}</span>
-            <strong className="text-[#7533CB]">৳{confirmedOrderTotal}</strong>
+
+          <div className="pt-2 border-t border-zinc-200/80 space-y-1.5">
+            <div className="flex justify-between text-zinc-600">
+              <span>{isBN ? 'ডেলিভারি এলাকা:' : 'Delivery Zone:'}</span>
+              <strong className="text-zinc-900">
+                {confirmedDeliveryZone === 'inside'
+                  ? (isBN ? 'ইনসাইড রংপুর (Rangpur City)' : 'Inside Rangpur')
+                  : (isBN ? 'আউটসাইড রংপুর (Outside Rangpur)' : 'Outside Rangpur')}
+              </strong>
+            </div>
+            <div className="flex justify-between text-zinc-600">
+              <span>{isBN ? 'পণ্যের উপ-মোট (Subtotal):' : 'Subtotal:'}</span>
+              <strong className="text-zinc-900">৳{totalPrice}</strong>
+            </div>
+            <div className="flex justify-between text-zinc-600">
+              <span>{isBN ? 'ডেলিভারি ফি (Delivery Fee):' : 'Delivery Fee:'}</span>
+              <strong className="text-[#7533CB]">৳{confirmedDeliveryFee}</strong>
+            </div>
+          </div>
+
+          <div className="flex justify-between text-zinc-900 pt-2 border-t border-zinc-200 font-extrabold text-sm">
+            <span>{isBN ? 'সর্বমোট পরিশোধনীয় মূল্য:' : 'Total Paid / Payable:'}</span>
+            <strong className="text-[#7533CB] text-base">৳{confirmedOrderTotal}</strong>
           </div>
         </div>
 
@@ -395,11 +428,10 @@ export default function CheckoutPage() {
                     if (e.target.value) setPhoneError('');
                   }}
                   placeholder="017XXXXXXXX"
-                  className={`w-full px-3 py-2 border rounded-md text-xs focus:outline-none ${
-                    phoneError || !customerPhone
+                  className={`w-full px-3 py-2 border rounded-md text-xs focus:outline-none ${phoneError || !customerPhone
                       ? 'border-rose-400 bg-rose-50/40 focus:border-rose-500 font-bold text-rose-900'
                       : 'border-zinc-300 focus:border-[#7533CB]'
-                  }`}
+                    }`}
                 />
               </div>
               <div>
@@ -425,9 +457,8 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className={`flex items-center gap-2.5 p-2.5 rounded-lg border ${
-                !customerPhone ? 'bg-rose-50/60 border-rose-300' : 'bg-zinc-50 border-zinc-200'
-              }`}>
+              <div className={`flex items-center gap-2.5 p-2.5 rounded-lg border ${!customerPhone ? 'bg-rose-50/60 border-rose-300' : 'bg-zinc-50 border-zinc-200'
+                }`}>
                 <Phone className={`w-4 h-4 shrink-0 ${!customerPhone ? 'text-rose-600' : 'text-purple-600'}`} />
                 <div className="min-w-0">
                   <span className="text-[10px] text-zinc-400 block font-medium uppercase">{isBN ? 'ফোন' : 'Phone'}</span>
@@ -473,11 +504,10 @@ export default function CheckoutPage() {
                   <div
                     key={addr.id}
                     onClick={() => setSelectedAddress(addr)}
-                    className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                      isSelected
+                    className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${isSelected
                         ? 'border-[#7533CB] bg-purple-50/30 shadow-xs'
                         : 'border-zinc-200 hover:border-zinc-300 bg-white'
-                    }`}
+                      }`}
                   >
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
@@ -501,7 +531,7 @@ export default function CheckoutPage() {
             </div>
           ) : null}
 
-          {/* Add New Address Button matching Chaldal 1:1 */}
+          {/* Add New Address Button */}
           <button
             onClick={() => setIsAddressModalOpen(true)}
             className="w-full py-3.5 border-2 border-dashed border-zinc-300 hover:border-[#7533CB] hover:bg-purple-50/30 rounded-xl text-zinc-700 hover:text-[#7533CB] text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
@@ -512,8 +542,85 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* 3. Section: Payment Method Selection */}
-      <div className="bg-white border border-zinc-200 rounded-xl shadow-2xs overflow-hidden mb-8">
+      {/* 3. Section: Delivery Fee & Zone Selection */}
+      <div className="bg-white border border-zinc-200 rounded-xl shadow-2xs overflow-hidden mb-6">
+        <div className="bg-zinc-50/80 px-4 py-3 border-b border-zinc-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Truck className="w-4 h-4 text-[#7533CB]" />
+            <h2 className="text-xs font-bold text-zinc-800 uppercase tracking-wide">
+              {isBN ? 'ডেলিভারি এরিয়া ও ফি (Delivery Fee & Zone)' : 'SELECT DELIVERY ZONE'}
+            </h2>
+          </div>
+          <span className="text-[11px] font-bold text-[#7533CB] bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+            {deliveryZone === 'inside' ? (isBN ? '৳২৫ ডেলিভারি চার্জ' : '৳25 Delivery Charge') : (isBN ? '৳৫০ ডেলিভারি চার্জ' : '৳50 Delivery Charge')}
+          </span>
+        </div>
+
+        <div className="p-4 sm:p-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {/* Inside Rangpur */}
+            <div
+              onClick={() => setDeliveryZone('inside')}
+              className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3 ${deliveryZone === 'inside'
+                  ? 'border-[#7533CB] bg-purple-50/40 shadow-xs'
+                  : 'border-zinc-200 hover:border-zinc-300 bg-white'
+                }`}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${deliveryZone === 'inside' ? 'border-[#7533CB] bg-[#7533CB]' : 'border-zinc-300'
+                }`}>
+                {deliveryZone === 'inside' && <Check className="w-3 h-3 text-white stroke-[3]" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-bold text-zinc-900">
+                    {isBN ? 'ইনসাইড রংপুর (Inside Rangpur)' : 'Inside Rangpur'}
+                  </span>
+                  <span className="text-xs font-black text-[#7533CB] bg-purple-100/90 border border-purple-200 px-2 py-0.5 rounded-md">
+                    ৳25
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-500 leading-relaxed">
+                  {isBN
+                    ? 'রংপুর সিটি কর্পোরেশন এলাকার ভেতরের লোকেশন।'
+                    : 'Applicable for deliveries inside Rangpur City area.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Outside Rangpur */}
+            <div
+              onClick={() => setDeliveryZone('outside')}
+              className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3 ${deliveryZone === 'outside'
+                  ? 'border-[#7533CB] bg-purple-50/40 shadow-xs'
+                  : 'border-zinc-200 hover:border-zinc-300 bg-white'
+                }`}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${deliveryZone === 'outside' ? 'border-[#7533CB] bg-[#7533CB]' : 'border-zinc-300'
+                }`}>
+                {deliveryZone === 'outside' && <Check className="w-3 h-3 text-white stroke-[3]" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-bold text-zinc-900">
+                    {isBN ? 'আউটসাইড রংপুর (Outside Rangpur)' : 'Outside Rangpur'}
+                  </span>
+                  <span className="text-xs font-black text-[#7533CB] bg-purple-100/90 border border-purple-200 px-2 py-0.5 rounded-md">
+                    ৳50
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-500 leading-relaxed">
+                  {isBN
+                    ? 'রংপুর সিটির বাইরের আশেপাশের উপজেলা/উপশহর এলাকা।'
+                    : 'Applicable for deliveries outside Rangpur City area.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Section: Payment Method Selection */}
+      <div className="bg-white border border-zinc-200 rounded-xl shadow-2xs overflow-hidden mb-6">
         <div className="bg-zinc-50/80 px-4 py-3 border-b border-zinc-200 flex items-center gap-2">
           <Banknote className="w-4 h-4 text-[#7533CB]" />
           <h2 className="text-xs font-bold text-zinc-800 uppercase tracking-wide">
@@ -543,7 +650,46 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* 5. Section: Need Anything Else? (Category & Sub-Category Related Recommendations) */}
+      {/* 5. Section: Order Invoice Summary */}
+      <div className="bg-white border border-zinc-200 rounded-xl shadow-2xs overflow-hidden mb-8">
+        <div className="bg-zinc-50/80 px-4 py-3 border-b border-zinc-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Receipt className="w-4 h-4 text-[#7533CB]" />
+            <h2 className="text-xs font-bold text-zinc-800 uppercase tracking-wide">
+              {isBN ? 'ইনভয়েস সামারি (Order Invoice & Summary)' : 'Order Invoice & Summary'}
+            </h2>
+          </div>
+          <span className="text-[11px] font-bold text-zinc-500">
+            {cartItems.length} {isBN ? 'টি আইটেম' : 'Items'}
+          </span>
+        </div>
+
+        <div className="p-4 sm:p-5 space-y-3 text-xs">
+          <div className="flex justify-between text-zinc-600">
+            <span>{isBN ? 'পণ্যের মোট মূল্য (Subtotal)' : 'Subtotal'}</span>
+            <span className="font-bold text-zinc-900">৳{totalPrice}</span>
+          </div>
+          <div className="flex justify-between text-zinc-600">
+            <span className="flex items-center gap-1.5">
+              <Truck className="w-3.5 h-3.5 text-[#7533CB]" />
+              <span>
+                {isBN ? 'ডেলিভারি চার্জ (' : 'Delivery Charge ('}
+                <strong className="text-zinc-800">
+                  {deliveryZone === 'inside' ? (isBN ? 'ইনসাইড রংপুর' : 'Inside Rangpur') : (isBN ? 'আউটসাইড রংপুর' : 'Outside Rangpur')}
+                </strong>
+                )
+              </span>
+            </span>
+            <span className="font-extrabold text-[#7533CB]">৳{SHIPPING_FEE}</span>
+          </div>
+          <div className="pt-3 border-t border-zinc-200 flex justify-between items-center text-sm font-black text-zinc-900">
+            <span>{isBN ? 'সর্বমোট ইনভয়েস মূল্য (Total Invoice Amount)' : 'Total Invoice Amount'}</span>
+            <span className="text-xl font-black text-[#7533CB]">৳{finalTotal}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. Section: Need Anything Else? (Category & Sub-Category Related Recommendations) */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3.5">
           <div>
@@ -571,7 +717,7 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* 6. Bottom Sticky Proceed Bar matching Chaldal 1:1 */}
+      {/* 7. Bottom Sticky Proceed Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-zinc-200 p-3.5 sm:px-8 shadow-lg">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -581,13 +727,9 @@ export default function CheckoutPage() {
                 <span className="text-xl sm:text-2xl font-black text-zinc-900">
                   ৳{finalTotal}
                 </span>
-                {SHIPPING_FEE === 0 ? (
-                  <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                    {isBN ? 'ফ্রি ডেলিভারি' : 'Free Delivery'}
-                  </span>
-                ) : (
-                  <span className="text-[11px] text-zinc-500">+৳49 delivery</span>
-                )}
+                <span className="text-[11px] font-bold text-[#7533CB] bg-purple-50 border border-purple-200 px-2 py-0.5 rounded">
+                  +৳{SHIPPING_FEE} {deliveryZone === 'inside' ? (isBN ? 'ইনসাইড রংপুর' : 'Inside') : (isBN ? 'আউটসাইড রংপুর' : 'Outside')}
+                </span>
               </div>
             </div>
           </div>
@@ -603,7 +745,7 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* 7. Authentic Add New Address Modal */}
+      {/* 8. Authentic Add New Address Modal */}
       <AddressModal
         isOpen={isAddressModalOpen}
         onClose={handleModalClose}
@@ -611,3 +753,4 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
