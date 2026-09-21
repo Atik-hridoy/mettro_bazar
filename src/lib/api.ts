@@ -135,7 +135,22 @@ async function loggedFetch(url: string, options: RequestInit = {}): Promise<Resp
   }
 }
 
-export async function fetchCategoriesFromBackend(): Promise<CategoryItem[]> {
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 Hour Client-Side Cache TTL
+
+export async function fetchCategoriesFromBackend(forceRefresh: boolean = false): Promise<CategoryItem[]> {
+  if (typeof window !== 'undefined' && !forceRefresh) {
+    try {
+      const cached = localStorage.getItem('mb_cache_categories');
+      const cachedTime = localStorage.getItem('mb_cache_categories_time');
+      if (cached && cachedTime && (Date.now() - Number(cachedTime) < CACHE_TTL_MS)) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {}
+  }
+
   try {
     const res = await loggedFetch(`${API_BASE_URL}/catalog/categories/`, {
       cache: 'no-store',
@@ -156,12 +171,21 @@ export async function fetchCategoriesFromBackend(): Promise<CategoryItem[]> {
       id: String(item.id),
       name: item.name_en,
       slug: item.slug,
-      image: item.image || item.banner || item.icon || undefined,
+      image: formatImageUrl(item.image || item.banner || item.icon),
       hasChildren: Array.isArray(item.children) && item.children.length > 0,
       children: Array.isArray(item.children) ? item.children.map(mapCategory) : [],
     });
 
-    return rawCategories.map(mapCategory);
+    const parsed = rawCategories.map(mapCategory);
+
+    if (typeof window !== 'undefined' && parsed.length > 0) {
+      try {
+        localStorage.setItem('mb_cache_categories', JSON.stringify(parsed));
+        localStorage.setItem('mb_cache_categories_time', String(Date.now()));
+      } catch {}
+    }
+
+    return parsed;
   } catch (error) {
     console.warn('Backend category API unreachable:', error);
     return [];
@@ -170,20 +194,40 @@ export async function fetchCategoriesFromBackend(): Promise<CategoryItem[]> {
 
 function formatImageUrl(rawUrl?: string): string {
   if (!rawUrl) return 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&auto=format&fit=crop&q=80';
-  if (rawUrl.includes('/media/https%3A/') || rawUrl.includes('/media/http%3A/')) {
-    const parts = rawUrl.split('/media/');
+  let url = rawUrl;
+  if (url.includes('/media/https%3A/') || url.includes('/media/http%3A/')) {
+    const parts = url.split('/media/');
     if (parts[1]) {
-      return decodeURIComponent(parts[1]);
+      url = decodeURIComponent(parts[1]);
     }
   }
-  if (rawUrl.includes('/media/https://') || rawUrl.includes('/media/http://')) {
-    const idx = rawUrl.indexOf('/media/');
-    return rawUrl.substring(idx + 7);
+  if (url.includes('/media/https://') || url.includes('/media/http://')) {
+    const idx = url.indexOf('/media/');
+    url = url.substring(idx + 7);
   }
-  return rawUrl;
+
+  // Cloudinary Bandwidth Saver Transformation (Auto WebP/AVIF format + scale width to 400px)
+  if (url.includes('cloudinary.com') && url.includes('/upload/') && !url.includes('f_auto')) {
+    url = url.replace('/upload/', '/upload/f_auto,q_auto,w_400,c_limit/');
+  }
+
+  return url;
 }
 
-export async function fetchProductsFromBackend(): Promise<Product[]> {
+export async function fetchProductsFromBackend(forceRefresh: boolean = false): Promise<Product[]> {
+  if (typeof window !== 'undefined' && !forceRefresh) {
+    try {
+      const cached = localStorage.getItem('mb_cache_products');
+      const cachedTime = localStorage.getItem('mb_cache_products_time');
+      if (cached && cachedTime && (Date.now() - Number(cachedTime) < CACHE_TTL_MS)) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {}
+  }
+
   try {
     const res = await loggedFetch(`${API_BASE_URL}/products/items/`, {
       cache: 'no-store',
@@ -200,7 +244,7 @@ export async function fetchProductsFromBackend(): Promise<Product[]> {
       return [];
     }
 
-    return rawProducts.map((p: any) => {
+    const parsed = rawProducts.map((p: any) => {
       const price = Number(p.selling_price || p.base_price || 0);
       const basePrice = p.base_price ? Number(p.base_price) : 0;
       const originalPrice = basePrice > price ? basePrice : undefined;
@@ -220,6 +264,15 @@ export async function fetchProductsFromBackend(): Promise<Product[]> {
         inStock: p.in_stock ?? true,
       };
     });
+
+    if (typeof window !== 'undefined' && parsed.length > 0) {
+      try {
+        localStorage.setItem('mb_cache_products', JSON.stringify(parsed));
+        localStorage.setItem('mb_cache_products_time', String(Date.now()));
+      } catch {}
+    }
+
+    return parsed;
   } catch (error) {
     console.warn('Backend product API unreachable:', error);
     return [];
