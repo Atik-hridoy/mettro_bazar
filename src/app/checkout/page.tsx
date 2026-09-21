@@ -76,6 +76,7 @@ export default function CheckoutPage() {
 
   // Order Confirmation State
   const [createdOrderNumber, setCreatedOrderNumber] = useState<string>('');
+  const [confirmedSubtotal, setConfirmedSubtotal] = useState<number>(0);
   const [confirmedOrderTotal, setConfirmedOrderTotal] = useState<number>(0);
   const [confirmedDeliveryFee, setConfirmedDeliveryFee] = useState<number>(25);
   const [confirmedDeliveryZone, setConfirmedDeliveryZone] = useState<'inside' | 'outside'>('inside');
@@ -281,7 +282,9 @@ export default function CheckoutPage() {
       const res = await placeOrderOnBackend(orderPayload);
       const orderNum = res?.order_number || res?.order?.order_number || `ORD-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
       const totalPaid = Number(res?.order?.total_amount) || currentOrderTotal;
+      const subTotalVal = Number(res?.order?.subtotal) || totalPrice;
       setCreatedOrderNumber(orderNum);
+      setConfirmedSubtotal(subTotalVal);
       setConfirmedOrderTotal(totalPaid);
       setConfirmedDeliveryFee(currentShippingFee);
       setConfirmedDeliveryZone(currentZone);
@@ -347,7 +350,7 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between text-zinc-600">
               <span>{isBN ? 'পণ্যের উপ-মোট (Subtotal):' : 'Subtotal:'}</span>
-              <strong className="text-zinc-900">৳{totalPrice}</strong>
+              <strong className="text-zinc-900">৳{confirmedSubtotal}</strong>
             </div>
             <div className="flex justify-between text-zinc-600">
               <span>{isBN ? 'ডেলিভারি ফি (Delivery Fee):' : 'Delivery Fee:'}</span>
